@@ -1,28 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  /* Swiss Clean Design System Colors */
-  --color-white: #FFFFFF;
-  --color-black-soft: #0D0D0D;
-  --color-gray-secondary: #7A7A7A;
-  --color-gray-muted: #B0B0B0;
-  --color-gray-placeholder: #D0D0D0;
-  --color-gray-border: #E8E8E8;
-  --color-surface-tint: #FAFAFA;
-  --color-red-primary: #E42313;
-  --color-success: #22C55E;
-}
-
-@theme inline {
   /* Typography */
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-display: 'Clash Display', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
 
-  /* Colors */
-  --color-background: var(--color-white);
-  --color-foreground: var(--color-black-soft);
-  --color-border: var(--color-gray-border);
-  --color-accent: var(--color-red-primary);
+  /* Colors - Tech-Forward Theme */
+  --color-bg-dark: #0A0A0F;
+  --color-bg-card: #151520;
+  --color-primary: #8B5CF6;
+  --color-accent: #00F0FF;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #A0A0B0;
+  --color-border: #2A2A3A;
+
+  /* Animation */
+  --duration-fast: 150ms;
+  --duration-medium: 300ms;
+  --duration-slow: 600ms;
+  --easing: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -32,9 +28,127 @@
 }
 
 body {
-  background: var(--color-background);
-  color: var(--color-foreground);
   font-family: var(--font-body);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  background: var(--color-bg-dark);
+  color: var(--color-text-primary);
+  overflow-x: hidden;
+  width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+  width: 100%;
+}
+
+/* Gradient Text Effect */
+.gradient-text {
+  background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 50%, #00F0FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animated Gradient Background */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animated-gradient {
+  background: linear-gradient(270deg, #8B5CF6, #EC4899, #00F0FF);
+  background-size: 400% 400%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* Fade In Animation */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up var(--duration-slow) var(--easing) both;
+}
+
+/* Pulse Animation for Live Indicators */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Glow Effect */
+.glow-effect {
+  box-shadow: 0 0 40px rgba(139, 92, 246, 0.4), 0 0 80px rgba(236, 72, 153, 0.2);
+  transition: box-shadow 0.3s ease;
+}
+
+.glow-effect:hover {
+  box-shadow: 0 0 60px rgba(139, 92, 246, 0.6), 0 0 100px rgba(236, 72, 153, 0.3);
+}
+
+/* Grid Background */
+.grid-background {
+  background-image:
+    linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7C3AED;
+}
+
+/* Selection Color */
+::selection {
+  background: var(--color-primary);
+  color: white;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
 }
