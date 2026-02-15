@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+:root {
+  /* Swiss Clean Design System Colors */
+  --color-white: #FFFFFF;
+  --color-black-soft: #0D0D0D;
+  --color-gray-secondary: #7A7A7A;
+  --color-gray-muted: #B0B0B0;
+  --color-gray-placeholder: #D0D0D0;
+  --color-gray-border: #E8E8E8;
+  --color-surface-tint: #FAFAFA;
+  --color-red-primary: #E42313;
+  --color-success: #22C55E;
+}
+
+@theme inline {
+  /* Typography */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Colors */
+  --color-background: var(--color-white);
+  --color-foreground: var(--color-black-soft);
+  --color-border: var(--color-gray-border);
+  --color-accent: var(--color-red-primary);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
