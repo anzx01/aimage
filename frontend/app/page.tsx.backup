@@ -1,0 +1,738 @@
+'use client';
+
+import Link from 'next/link';
+import Image from 'next/image';
+import { useState } from 'react';
+
+export default function LandingPage() {
+  // 使用免费商用图片
+  const showcaseItems = [
+    {
+      category: '珠宝配饰',
+      title: '翡翠手串展示',
+      views: '2.3M',
+      model: 'Veo3.1 Fast',
+      imageUrl: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80'
+    },
+    {
+      category: '女装',
+      title: '白色西装套装',
+      views: '1.8M',
+      model: 'Sora2渠道版',
+      imageUrl: 'https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=800&q=80'
+    },
+    {
+      category: '女装',
+      title: '酒红色连衣裙',
+      views: '3.1M',
+      model: 'Veo3.1 Fast',
+      imageUrl: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=800&q=80'
+    },
+    {
+      category: '美妆个护',
+      title: '护肤品测评',
+      views: '1.5M',
+      model: 'Sora2渠道版',
+      imageUrl: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=800&q=80'
+    },
+    {
+      category: '男装',
+      title: '黑色卫衣穿搭',
+      views: '2.7M',
+      model: 'Veo3.1 Fast',
+      imageUrl: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?w=800&q=80'
+    },
+    {
+      category: '女装',
+      title: '米色针织套装',
+      views: '1.9M',
+      model: 'Sora2渠道版',
+      imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80'
+    }
+  ];
+  return (
+    <div className="min-h-screen bg-[#0A0A0F]">
+      {/* Header */}
+      <header className="flex items-center justify-between px-6 lg:px-12 h-20 border-b border-[#2A2A3A] bg-[#0A0A0F]/80 backdrop-blur-xl sticky top-0 z-50">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gradient-to-br from-[#8B5CF6] to-[#EC4899] rounded-lg" />
+          <span className="text-xl font-bold text-white">
+            AIMAGE
+          </span>
+        </div>
+
+        <nav className="hidden md:flex items-center gap-8">
+          <Link href="#features" className="text-sm text-[#A0A0B0] hover:text-white transition-colors">
+            Features
+          </Link>
+          <Link href="#pricing" className="text-sm text-[#A0A0B0] hover:text-white transition-colors">
+            Pricing
+          </Link>
+          <Link href="#showcase" className="text-sm text-[#A0A0B0] hover:text-white transition-colors">
+            Showcase
+          </Link>
+          <Link href="#faq" className="text-sm text-[#A0A0B0] hover:text-white transition-colors">
+            FAQ
+          </Link>
+        </nav>
+
+        <div className="flex items-center gap-3">
+          <Link href="/login" className="text-sm font-medium text-white hover:text-[#8B5CF6] transition-colors">
+            Login
+          </Link>
+          <Link
+            href="/signup"
+            className="px-6 py-3 bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] text-white text-sm font-bold rounded-full hover:scale-105 transition-all duration-300"
+          >
+            Get Started Free
+          </Link>
+        </div>
+      </header>
+
+      {/* Hero Section - Elements 3, 4, 5 */}
+      <section className="relative flex flex-col items-center px-6 lg:px-12 pt-32 pb-20 gap-12">
+        {/* Badge */}
+        <div className="flex items-center gap-2 px-4 py-2 bg-[#151520] border border-[#2A2A3A] rounded-full animate-fade-in-up">
+          <div className="w-2 h-2 bg-[#00F0FF] rounded-full animate-pulse" />
+          <span className="text-sm font-medium text-[#A0A0B0]">
+            AI-Powered Video Generation Platform
+          </span>
+        </div>
+
+        {/* Title - Element 3 */}
+        <div className="flex flex-col items-center gap-6 max-w-4xl">
+          <h1 className="text-5xl md:text-7xl font-bold text-center leading-tight">
+            <span className="inline-block animate-fade-in-up gradient-text" style={{ animationDelay: '0ms' }}>
+              从创意到爆款
+            </span>
+            <br />
+            <span className="inline-block animate-fade-in-up gradient-text" style={{ animationDelay: '100ms' }}>
+              只需一键生成
+            </span>
+          </h1>
+          <p className="text-lg md:text-xl text-[#A0A0B0] text-center leading-relaxed max-w-2xl animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+            聚合顶级AI模型，一站式生成TikTok爆款视频。从内容创作到多渠道分发，让每个跨境卖家都能轻松打造爆款内容
+          </p>
+        </div>
+
+        {/* CTA Buttons - Element 4 */}
+        <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+          <Link
+            href="/signup"
+            className="px-8 py-4 bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] text-white text-lg font-semibold rounded-full hover:shadow-lg hover:shadow-[#8B5CF6]/50 hover:scale-105 transition-all duration-300 glow-effect"
+          >
+            免费开始创作 →
+          </Link>
+          <Link
+            href="#showcase"
+            className="px-8 py-4 bg-[#151520] border border-[#2A2A3A] text-white text-lg font-medium rounded-full hover:border-[#8B5CF6] hover:scale-105 transition-all duration-300"
+          >
+            查看案例
+          </Link>
+        </div>
+
+        {/* Social Proof - Element 5 */}
+        <div className="flex flex-wrap items-center justify-center gap-8 mt-8 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+          <div className="text-center">
+            <div className="text-4xl font-bold gradient-text">10K+</div>
+            <div className="text-sm text-[#A0A0B0] mt-1">活跃用户</div>
+          </div>
+          <div className="w-px h-12 bg-[#2A2A3A]" />
+          <div className="text-center">
+            <div className="text-4xl font-bold gradient-text">100K+</div>
+            <div className="text-sm text-[#A0A0B0] mt-1">生成视频</div>
+          </div>
+          <div className="w-px h-12 bg-[#2A2A3A]" />
+          <div className="text-center">
+            <div className="text-4xl font-bold gradient-text">98%</div>
+            <div className="text-sm text-[#A0A0B0] mt-1">满意度</div>
+          </div>
+        </div>
+
+        {/* Product Screenshot - Element 6 */}
+        <div className="relative w-full max-w-5xl h-[500px] mt-12 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#8B5CF6]/20 to-[#EC4899]/20 rounded-2xl blur-3xl" />
+          <div className="relative w-full h-full bg-[#151520] border border-[#2A2A3A] rounded-2xl overflow-hidden">
+            <Image
+              src="https://images.unsplash.com/photo-1551650975-87deedd944c3?w=1200&q=80"
+              alt="AIMAGE Dashboard"
+              fill
+              className="object-cover"
+              priority
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0F] via-transparent to-transparent" />
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-6 py-3 bg-[#151520]/90 backdrop-blur-xl border border-[#2A2A3A] rounded-full">
+              <div className="w-3 h-3 bg-[#00F0FF] rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-white">
+                AI视频生成平台 · 实时预览
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Logos */}
+      <section className="flex flex-col items-center px-6 lg:px-12 py-16 gap-8">
+        <p className="text-sm text-[#A0A0B0]">
+          Trusted by 10,000+ creators worldwide
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-12">
+          {['TikTok', 'Shopify', 'Amazon', 'AliExpress'].map((brand) => (
+            <span key={brand} className="text-xl font-semibold text-[#4A4A5A] hover:text-[#8B5CF6] transition-colors duration-300">
+              {brand}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* Features Section - Element 7 */}
+      <section id="features" className="relative px-6 lg:px-12 py-32 overflow-hidden">
+        <div className="absolute inset-0 grid-background opacity-30" />
+
+        <div className="relative max-w-7xl mx-auto">
+          <div className="flex flex-col items-center gap-6 mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold text-center gradient-text">
+              一站式AI视频生成平台
+            </h2>
+            <p className="text-lg text-[#A0A0B0] text-center max-w-2xl">
+              从创意到发布，全流程AI赋能，让视频创作变得简单高效
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            {
+              title: 'AI智能生成',
+              description: '聚合Seedance 2.0、Wan2.6等顶级AI模型，一键生成高质量视频内容',
+              gradient: 'from-[#8B5CF6] to-[#6D28D9]'
+            },
+            {
+              title: '提示词优化',
+              description: '智能优化用户输入，自动生成专业级视频生成提示词，提升生成质量',
+              gradient: 'from-[#EC4899] to-[#BE185D]'
+            },
+            {
+              title: '多渠道分发',
+              description: '一键分发至TikTok、Instagram等多个平台，扩大内容影响力',
+              gradient: 'from-[#00F0FF] to-[#0EA5E9]'
+            },
+            {
+              title: '实时预览',
+              description: '生成过程实时预览，随时调整参数，确保视频效果符合预期',
+              gradient: 'from-[#F59E0B] to-[#D97706]'
+            },
+            {
+              title: '素材管理',
+              description: '智能素材库管理，快速检索和复用历史素材，提升创作效率',
+              gradient: 'from-[#10B981] to-[#059669]'
+            },
+            {
+              title: '数据分析',
+              description: '深度数据分析，洞察视频表现，优化内容策略，提升转化率',
+              gradient: 'from-[#8B5CF6] to-[#EC4899]'
+            }
+          ].map((feature, index) => (
+            <div
+              key={index}
+              className="group relative p-8 bg-[#151520] border border-[#2A2A3A] rounded-2xl hover:border-[#8B5CF6] hover:-translate-y-2 transition-all duration-300 animate-fade-in-up"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <div className={`absolute top-0 left-0 w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-br-2xl opacity-20 group-hover:opacity-30 transition-opacity`} />
+
+              <div className="relative flex flex-col gap-4">
+                <div className={`w-12 h-12 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center`}>
+                  <div className="w-6 h-6 bg-white/20 rounded-lg" />
+                </div>
+
+                <h3 className="text-2xl font-bold text-white">
+                  {feature.title}
+                </h3>
+
+                <p className="text-[#A0A0B0] leading-relaxed">
+                  {feature.description}
+                </p>
+              </div>
+
+              <div className="absolute inset-0 bg-gradient-to-br from-[#8B5CF6]/0 to-[#EC4899]/0 group-hover:from-[#8B5CF6]/5 group-hover:to-[#EC4899]/5 rounded-2xl transition-all duration-300 pointer-events-none" />
+            </div>
+          ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="relative px-6 lg:px-12 py-32">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col items-center gap-6 mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold text-center gradient-text">
+              灵活的定价方案
+            </h2>
+            <p className="text-lg text-[#A0A0B0] text-center max-w-2xl">
+              选择适合您的方案，随时升级或降级
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              name: '免费版',
+              price: '¥0',
+              period: '永久免费',
+              features: ['10 积分/月', '基础视频生成', '标准画质', '社区支持'],
+              cta: '开始使用',
+              highlight: false
+            },
+            {
+              name: '专业版',
+              price: '¥99',
+              period: '每月',
+              features: ['500 积分/月', '所有AI模型', '高清画质', '优先处理', '邮件支持'],
+              cta: '立即订阅',
+              highlight: true
+            },
+            {
+              name: '企业版',
+              price: '¥499',
+              period: '每月',
+              features: ['3000 积分/月', '所有AI模型', '4K画质', '最高优先级', '专属客服', 'API访问'],
+              cta: '联系销售',
+              highlight: false
+            }
+          ].map((plan, index) => (
+            <div
+              key={index}
+              className={`relative p-8 rounded-2xl transition-all duration-300 hover:-translate-y-2 ${
+                plan.highlight
+                  ? 'bg-gradient-to-br from-[#8B5CF6] to-[#EC4899] border-2 border-transparent'
+                  : 'bg-[#151520] border-2 border-[#2A2A3A] hover:border-[#8B5CF6]'
+              }`}
+            >
+              {plan.highlight && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#00F0FF] text-[#0A0A0F] text-sm font-bold rounded-full">
+                  最受欢迎
+                </div>
+              )}
+
+              <div className={`flex flex-col gap-8 ${plan.highlight ? 'text-white' : ''}`}>
+                <div className="flex flex-col gap-2">
+                  <h3 className={`text-xl font-bold ${plan.highlight ? 'text-white' : 'text-white'}`}>
+                    {plan.name}
+                  </h3>
+                  <div className="flex items-baseline gap-2">
+                    <span className={`text-5xl font-bold ${plan.highlight ? 'text-white' : 'text-white'}`}>
+                      {plan.price}
+                    </span>
+                    <span className={`text-sm ${plan.highlight ? 'text-white/80' : 'text-[#A0A0B0]'}`}>
+                      {plan.period}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  {plan.features.map((feature, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                        plan.highlight ? 'bg-white/20' : 'bg-[#8B5CF6]/20'
+                      }`}>
+                        <svg className={`w-3 h-3 ${plan.highlight ? 'text-white' : 'text-[#8B5CF6]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <span className={`text-sm ${plan.highlight ? 'text-white' : 'text-[#A0A0B0]'}`}>
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <Link
+                  href="/signup"
+                  className={`px-6 py-4 text-center font-bold rounded-xl transition-all duration-300 ${
+                    plan.highlight
+                      ? 'bg-white text-[#8B5CF6] hover:bg-white/90 hover:scale-105'
+                      : 'bg-[#8B5CF6] text-white hover:bg-[#7C3AED] hover:scale-105'
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
+              </div>
+            </div>
+          ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Showcase Section - Element 6 */}
+      <section id="showcase" className="relative px-6 lg:px-12 py-32">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col items-center gap-6 mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold text-center gradient-text">
+              创作者案例展示
+            </h2>
+            <p className="text-lg text-[#A0A0B0] text-center max-w-2xl">
+              看看其他创作者如何使用AIMAGE打造爆款内容
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {showcaseItems.map((item, index) => (
+            <div key={index} className="group cursor-pointer animate-fade-in-up" style={{ animationDelay: `${index * 100}ms` }}>
+              <div className="relative w-full h-[320px] bg-[#151520] border border-[#2A2A3A] rounded-2xl overflow-hidden group-hover:border-[#8B5CF6] transition-all duration-300">
+                <div className="absolute top-4 left-4 flex gap-2 z-20">
+                  <span className="px-3 py-1 bg-[#8B5CF6] text-white text-xs font-bold rounded-full">
+                    {item.category}
+                  </span>
+                  <span className="px-3 py-1 bg-[#151520]/90 backdrop-blur-sm border border-[#2A2A3A] text-[#A0A0B0] text-xs rounded-full">
+                    {item.model}
+                  </span>
+                </div>
+                <Image
+                  src={item.imageUrl}
+                  alt={item.title}
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0F] via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#8B5CF6] to-[#EC4899] rounded-full flex items-center justify-center glow-effect">
+                    <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+                  <p className="text-lg font-bold text-white mb-1">
+                    {item.title}
+                  </p>
+                  <p className="text-sm text-[#A0A0B0]">
+                    {item.views} views • 3 days ago
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section - Element 8 */}
+      <section className="relative px-6 lg:px-12 py-32 overflow-hidden">
+        <div className="absolute inset-0 grid-background opacity-20" />
+
+        <div className="relative max-w-7xl mx-auto">
+          <div className="flex flex-col items-center gap-6 mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold text-center gradient-text">
+              用户真实评价
+            </h2>
+            <p className="text-lg text-[#A0A0B0] text-center max-w-2xl">
+              来自全球创作者的真实反馈
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[
+            {
+              name: '张小美',
+              role: '跨境电商卖家',
+              avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&q=80',
+              content: '使用AIMAGE后，我的视频制作效率提升了10倍！现在每天可以轻松产出5-10条高质量视频，TikTok粉丝增长速度惊人。',
+              rating: 5
+            },
+            {
+              name: 'David Chen',
+              role: '内容创作者',
+              avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
+              content: 'AI生成的视频质量超出预期，特别是Veo3.1模型，画面细腻流畅。客户反馈非常好，转化率提升了40%。',
+              rating: 5
+            },
+            {
+              name: '李雪',
+              role: '美妆博主',
+              avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&q=80',
+              content: '作为美妆博主，我需要大量的产品展示视频。AIMAGE让我可以快速生成各种风格的视频，节省了大量拍摄时间。',
+              rating: 5
+            },
+            {
+              name: 'Michael Wang',
+              role: '独立设计师',
+              avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&q=80',
+              content: '提示词优化功能太强大了！即使我不擅长写提示词，AI也能帮我生成专业级的视频内容。强烈推荐！',
+              rating: 5
+            },
+            {
+              name: '王芳',
+              role: '服装店主',
+              avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80',
+              content: '多渠道分发功能让我的工作效率大大提升，一键就能把视频发布到多个平台。客服响应也很及时，体验很好。',
+              rating: 5
+            },
+            {
+              name: 'Alex Liu',
+              role: '数字营销专家',
+              avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&q=80',
+              content: '数据分析功能帮助我优化内容策略，现在能清楚知道哪些视频表现好。ROI提升了3倍，这个工具太值了！',
+              rating: 5
+            }
+          ].map((testimonial, index) => (
+            <div
+              key={index}
+              className="group relative p-8 bg-[#151520] border border-[#2A2A3A] rounded-2xl hover:border-[#8B5CF6] hover:-translate-y-2 transition-all duration-300 animate-fade-in-up"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#8B5CF6]/10 to-[#EC4899]/10 rounded-bl-[100px] opacity-50" />
+
+              <div className="relative flex flex-col gap-6">
+                {/* Rating Stars */}
+                <div className="flex gap-1">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <svg key={i} className="w-5 h-5 text-[#F59E0B]" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+
+                {/* Content */}
+                <p className="text-[#E0E0E0] leading-relaxed text-base">
+                  "{testimonial.content}"
+                </p>
+
+                {/* Author */}
+                <div className="flex items-center gap-4 pt-4 border-t border-[#2A2A3A]">
+                  <div className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-[#8B5CF6]/30 group-hover:ring-[#8B5CF6] transition-all duration-300">
+                    <Image
+                      src={testimonial.avatar}
+                      alt={testimonial.name}
+                      fill
+                      className="object-cover"
+                      sizes="48px"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold">
+                      {testimonial.name}
+                    </p>
+                    <p className="text-sm text-[#A0A0B0]">
+                      {testimonial.role}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section - Element 9 */}
+      <section id="faq" className="relative px-6 lg:px-12 py-32">
+        <div className="flex flex-col items-center gap-6 mb-20">
+          <h2 className="text-4xl md:text-5xl font-bold text-center gradient-text">
+            常见问题
+          </h2>
+          <p className="text-lg text-[#A0A0B0] text-center max-w-2xl">
+            关于AIMAGE的一切，这里都有答案
+          </p>
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          <FAQAccordion />
+        </div>
+      </section>
+
+      {/* Final CTA - Element 10 */}
+      <section className="relative px-6 lg:px-12 py-32 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#8B5CF6]/20 via-[#EC4899]/20 to-[#00F0FF]/20 blur-3xl" />
+        <div className="absolute inset-0 grid-background opacity-20" />
+
+        <div className="relative flex flex-col items-center gap-8 max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl md:text-6xl font-bold gradient-text">
+            准备好开始创作了吗？
+          </h2>
+          <p className="text-lg md:text-xl text-[#A0A0B0] max-w-2xl">
+            立即注册，免费获得10积分，开启您的AI视频创作之旅
+          </p>
+          <Link
+            href="/signup"
+            className="px-12 py-5 bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] text-white text-lg font-bold rounded-full hover:scale-110 transition-all duration-300 glow-effect"
+          >
+            免费开始创作 →
+          </Link>
+          <div className="flex items-center gap-6 mt-4">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-[#00F0FF]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span className="text-sm text-[#A0A0B0]">无需信用卡</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-[#00F0FF]" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span className="text-sm text-[#A0A0B0]">随时取消</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer - Element 11 */}
+      <footer className="relative px-6 lg:px-12 py-16 border-t border-[#2A2A3A]">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#8B5CF6] to-[#EC4899] rounded-lg" />
+                <span className="text-2xl font-bold text-white">
+                  AIMAGE
+                </span>
+              </div>
+              <p className="text-[#A0A0B0] leading-relaxed max-w-sm">
+                AI驱动的TikTok视频生成平台，让每个创作者都能轻松打造爆款内容
+              </p>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-white mb-4">
+                产品
+              </h4>
+              <div className="flex flex-col gap-3">
+                {['功能', '定价', '案例', 'API文档'].map((item) => (
+                  <Link key={item} href="#" className="text-sm text-[#A0A0B0] hover:text-[#8B5CF6] transition-colors">
+                    {item}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-white mb-4">
+                公司
+              </h4>
+              <div className="flex flex-col gap-3">
+                {['关于我们', '博客', '加入我们', '联系我们'].map((item) => (
+                  <Link key={item} href="#" className="text-sm text-[#A0A0B0] hover:text-[#8B5CF6] transition-colors">
+                    {item}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-sm font-bold text-white mb-4">
+                法律
+              </h4>
+              <div className="flex flex-col gap-3">
+                {['隐私政策', '服务条款', 'Cookie政策'].map((item) => (
+                  <Link key={item} href="#" className="text-sm text-[#A0A0B0] hover:text-[#8B5CF6] transition-colors">
+                    {item}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-[#2A2A3A]">
+            <p className="text-sm text-[#A0A0B0]">
+              © 2024 AIMAGE. All rights reserved.
+            </p>
+            <div className="flex gap-6">
+              {['Twitter', 'LinkedIn', 'GitHub'].map((social) => (
+                <Link key={social} href="#" className="text-sm text-[#A0A0B0] hover:text-[#8B5CF6] transition-colors">
+                  {social}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+// FAQ Accordion Component
+function FAQAccordion() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  const faqs = [
+    {
+      question: '什么是AIMAGE？如何使用？',
+      answer: 'AIMAGE是一个AI驱动的视频生成平台，聚合了Seedance 2.0、Wan2.6、Veo3.1等顶级AI模型。您只需输入创意描述或上传素材，AI就能自动生成高质量的TikTok视频。平台还提供提示词优化、多渠道分发等功能，让视频创作变得简单高效。'
+    },
+    {
+      question: '支持哪些AI视频生成模型？',
+      answer: '我们聚合了市面上最先进的AI视频生成模型，包括Seedance 2.0、Wan2.6、Veo3.1 Fast、Sora2渠道版等。不同模型各有特色，您可以根据需求选择最适合的模型。我们会持续更新和添加新的模型，确保您始终能使用最先进的技术。'
+    },
+    {
+      question: '视频生成需要多长时间？',
+      answer: '生成时间取决于您选择的模型和视频长度。一般来说，Veo3.1 Fast模型可以在30秒-2分钟内生成短视频，Sora2模型可能需要3-5分钟。我们提供实时预览功能，您可以随时查看生成进度。专业版和企业版用户享有优先处理权限，生成速度更快。'
+    },
+    {
+      question: '如何计费？积分如何使用？',
+      answer: '我们采用积分制计费。免费版每月赠送10积分，专业版500积分/月，企业版3000积分/月。不同模型和视频长度消耗的积分不同，一般5-30秒视频消耗1-3积分。未使用的积分会自动累积到下个月。您也可以单独购买积分包，价格更优惠。'
+    },
+    {
+      question: '生成的视频版权归谁？',
+      answer: '您生成的所有视频版权完全归您所有。您可以自由使用这些视频进行商业推广、社交媒体发布、广告投放等。我们不会对您的视频内容主张任何权利。但请注意，您需要确保输入的素材和内容不侵犯他人版权。'
+    },
+    {
+      question: '支持哪些视频格式和分辨率？',
+      answer: '我们支持MP4、MOV等主流视频格式输出。分辨率方面，免费版支持标准画质(720p)，专业版支持高清画质(1080p)，企业版支持4K画质。视频比例支持16:9、9:16(竖屏)、1:1(方形)等多种格式，完美适配TikTok、Instagram、YouTube等平台。'
+    },
+    {
+      question: '可以批量生成视频吗？',
+      answer: '可以！专业版和企业版用户可以使用批量生成功能。您可以一次性上传多个创意描述或素材，系统会自动排队生成。企业版用户还可以通过API接口实现自动化批量生成，大大提升工作效率。'
+    },
+    {
+      question: '提供技术支持吗？',
+      answer: '我们为所有用户提供技术支持。免费版用户可以通过社区论坛获取帮助，专业版用户享有邮件支持(24小时内响应)，企业版用户配备专属客服(实时响应)。我们还提供详细的使用文档、视频教程和最佳实践指南。'
+    },
+    {
+      question: '如何取消订阅？',
+      answer: '您可以随时在账户设置中取消订阅，无需任何理由。取消后，您仍可使用服务至当前计费周期结束。我们不收取任何取消费用。如果您对服务不满意，可以联系客服申请退款(订阅后7天内)。'
+    },
+    {
+      question: '数据安全如何保障？',
+      answer: '我们非常重视数据安全。所有数据传输采用SSL加密，视频文件存储在安全的云服务器上。我们不会与第三方分享您的数据。您可以随时下载或删除自己的视频。我们定期进行安全审计，确保您的数据安全无虞。'
+    }
+  ];
+
+  return (
+    <div className="flex flex-col gap-4">
+      {faqs.map((faq, index) => (
+        <div
+          key={index}
+          className="bg-[#151520] border border-[#2A2A3A] rounded-xl overflow-hidden hover:border-[#8B5CF6] transition-all duration-300"
+        >
+          <button
+            onClick={() => setOpenIndex(openIndex === index ? null : index)}
+            className="w-full flex items-center justify-between p-6 text-left hover:bg-[#1A1A25] transition-colors duration-200"
+          >
+            <span className="text-lg font-semibold text-white pr-8">
+              {faq.question}
+            </span>
+            <svg
+              className={`w-6 h-6 text-[#8B5CF6] flex-shrink-0 transition-transform duration-300 ${
+                openIndex === index ? 'rotate-180' : ''
+              }`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              openIndex === index ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <div className="px-6 pb-6 text-[#A0A0B0] leading-relaxed">
+              {faq.answer}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
