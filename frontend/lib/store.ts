@@ -26,7 +26,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     if (data.user) {
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+        .from('users')
         .select('*')
         .eq('id', data.user.id)
         .single();
@@ -50,7 +50,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     if (session?.user) {
       const { data: profile, error: profileError } = await supabase
-        .from('profiles')
+        .from('users')
         .select('*')
         .eq('id', session.user.id)
         .single();

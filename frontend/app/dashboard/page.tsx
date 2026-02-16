@@ -188,10 +188,10 @@ export default function DashboardPage() {
         </header>
 
       {/* Main Content */}
-      <main className="max-w-[1200px] mx-auto px-8 py-16 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+      <main className="max-w-[1200px] mx-auto px-8 py-20 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
         {/* Welcome Section */}
-        <div className="mb-20 animate-slide-in">
-          <div className="flex items-baseline gap-4 mb-4">
+        <div className="mb-24 animate-slide-in">
+          <div className="flex items-baseline gap-4 mb-6">
             <div className="w-1 h-12" style={{ background: 'linear-gradient(180deg, #D99E46 0%, transparent 100%)' }} />
             <div>
               <p className="text-sm tracking-[0.2em] uppercase mb-2" style={{ fontFamily: 'DM Sans, sans-serif', color: '#D99E46', fontWeight: 500 }}>
@@ -203,25 +203,25 @@ export default function DashboardPage() {
               </h1>
             </div>
           </div>
-          <p className="text-lg ml-8 max-w-2xl" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', lineHeight: '1.8' }}>
+          <p className="text-lg ml-8 max-w-2xl" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', lineHeight: '3.5' }}>
             开始创作您的下一个爆款视频，让创意在这里绽放。
           </p>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-8 mb-20">
+        <div className="grid grid-cols-3 gap-10 mb-24">
           <Link
             href="/generate"
-            className="group relative p-10 rounded-2xl border backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-slide-in stagger-1"
+            className="group relative p-12 rounded-2xl border backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-slide-in stagger-1"
             style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.2)' }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-20" style={{ background: '#D99E46' }} />
             <div className="relative">
-              <div className="text-5xl mb-6 transition-transform duration-500 group-hover:scale-110">🎬</div>
-              <h3 className="text-2xl mb-3" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#FFFFFF' }}>
+              <div className="text-5xl mb-8 transition-transform duration-500 group-hover:scale-110">🎬</div>
+              <h3 className="text-2xl mb-4" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#FFFFFF' }}>
                 一键成片
               </h3>
-              <p className="text-sm leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5' }}>
+              <p className="text-sm leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', lineHeight: '3' }}>
                 快速生成高质量视频内容，<br />让创作变得简单高效
               </p>
               <div className="mt-6 flex items-center gap-2 text-xs tracking-wider uppercase opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ fontFamily: 'DM Sans, sans-serif', color: '#D99E46', fontWeight: 600 }}>
@@ -233,16 +233,16 @@ export default function DashboardPage() {
 
           <Link
             href="/showcase"
-            className="group relative p-10 rounded-2xl border backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-slide-in stagger-2"
+            className="group relative p-12 rounded-2xl border backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-slide-in stagger-2"
             style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.2)' }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-20" style={{ background: '#D99E46' }} />
             <div className="relative">
-              <div className="text-5xl mb-6 transition-transform duration-500 group-hover:scale-110">✨</div>
-              <h3 className="text-2xl mb-3" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#FFFFFF' }}>
+              <div className="text-5xl mb-8 transition-transform duration-500 group-hover:scale-110">✨</div>
+              <h3 className="text-2xl mb-4" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#FFFFFF' }}>
                 案例库
               </h3>
-              <p className="text-sm leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5' }}>
+              <p className="text-sm leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', lineHeight: '3' }}>
                 浏览优秀案例获取灵感，<br />探索无限创作可能
               </p>
               <div className="mt-6 flex items-center gap-2 text-xs tracking-wider uppercase opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ fontFamily: 'DM Sans, sans-serif', color: '#D99E46', fontWeight: 600 }}>
@@ -254,16 +254,16 @@ export default function DashboardPage() {
 
           <Link
             href="/projects"
-            className="group relative p-10 rounded-2xl border backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-slide-in stagger-3"
+            className="group relative p-12 rounded-2xl border backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-slide-in stagger-3"
             style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.2)' }}
           >
             <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-20" style={{ background: '#D99E46' }} />
             <div className="relative">
-              <div className="text-5xl mb-6 transition-transform duration-500 group-hover:scale-110">🚀</div>
-              <h3 className="text-2xl mb-3" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#FFFFFF' }}>
+              <div className="text-5xl mb-8 transition-transform duration-500 group-hover:scale-110">🚀</div>
+              <h3 className="text-2xl mb-4" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#FFFFFF' }}>
                 我的项目
               </h3>
-              <p className="text-sm leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5' }}>
+              <p className="text-sm leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', lineHeight: '3' }}>
                 管理您的视频项目，<br />追踪创作进度
               </p>
               <div className="mt-6 flex items-center gap-2 text-xs tracking-wider uppercase opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ fontFamily: 'DM Sans, sans-serif', color: '#D99E46', fontWeight: 600 }}>
@@ -276,8 +276,8 @@ export default function DashboardPage() {
 
           {/* Recent Projects */}
           {recentProjects.length > 0 && (
-            <div className="mb-20 animate-slide-in stagger-4">
-              <div className="flex items-center justify-between mb-10">
+            <div className="mb-24 animate-slide-in stagger-4">
+              <div className="flex items-center justify-between mb-12">
                 <div className="flex items-baseline gap-4">
                   <div className="w-1 h-8" style={{ background: 'linear-gradient(180deg, #D99E46 0%, transparent 100%)' }} />
                   <h2 className="text-3xl" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#FFFFFF' }}>
@@ -293,7 +293,7 @@ export default function DashboardPage() {
                   <span>→</span>
                 </Link>
               </div>
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-3 gap-8">
                 {recentProjects.map((project, index) => {
                   const statusConfig = {
                     draft: { label: '草稿', color: '#8B9BB5', bg: 'rgba(139, 155, 181, 0.1)' },
@@ -307,10 +307,10 @@ export default function DashboardPage() {
                     <Link
                       key={project.id}
                       href={`/projects/${project.id}`}
-                      className="group p-8 rounded-2xl border backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl"
+                      className="group p-10 rounded-2xl border backdrop-blur-sm transition-all duration-500 hover:-translate-y-1 hover:shadow-xl"
                       style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.15)' }}
                     >
-                      <div className="flex items-start justify-between mb-6">
+                      <div className="flex items-start justify-between mb-8">
                         <h3 className="text-xl flex-1 transition-colors duration-300 group-hover:text-[#D99E46]" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 600, color: '#FFFFFF' }}>
                           {project.title}
                         </h3>
@@ -318,7 +318,7 @@ export default function DashboardPage() {
                           {status.label}
                         </span>
                       </div>
-                      <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5' }}>
+                      <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', lineHeight: '3' }}>
                         {new Date(project.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })}
                       </p>
                     </Link>
@@ -329,9 +329,9 @@ export default function DashboardPage() {
           )}
 
           {/* Stats */}
-          <div className="grid grid-cols-4 gap-6">
-            <div className="p-8 rounded-2xl border backdrop-blur-sm" style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.15)' }}>
-              <div className="text-xs tracking-[0.2em] uppercase mb-4" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
+          <div className="grid grid-cols-4 gap-8">
+            <div className="p-10 rounded-2xl border backdrop-blur-sm" style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.15)' }}>
+              <div className="text-xs tracking-[0.2em] uppercase mb-6" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
                 剩余积分
               </div>
               <div className="text-4xl" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 700, color: '#D99E46' }}>
@@ -339,8 +339,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="p-8 rounded-2xl border backdrop-blur-sm" style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.15)' }}>
-              <div className="text-xs tracking-[0.2em] uppercase mb-4" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
+            <div className="p-10 rounded-2xl border backdrop-blur-sm" style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.15)' }}>
+              <div className="text-xs tracking-[0.2em] uppercase mb-6" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
                 订阅计划
               </div>
               <div className="text-4xl capitalize" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 700, color: '#FFFFFF' }}>
@@ -348,8 +348,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="p-8 rounded-2xl border backdrop-blur-sm" style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.15)' }}>
-              <div className="text-xs tracking-[0.2em] uppercase mb-4" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
+            <div className="p-10 rounded-2xl border backdrop-blur-sm" style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.15)' }}>
+              <div className="text-xs tracking-[0.2em] uppercase mb-6" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
                 总项目数
               </div>
               <div className="text-4xl" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 700, color: '#FFFFFF' }}>
@@ -357,8 +357,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="p-8 rounded-2xl border backdrop-blur-sm" style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.15)' }}>
-              <div className="text-xs tracking-[0.2em] uppercase mb-4" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
+            <div className="p-10 rounded-2xl border backdrop-blur-sm" style={{ background: 'rgba(26, 31, 53, 0.4)', borderColor: 'rgba(217, 158, 70, 0.15)' }}>
+              <div className="text-xs tracking-[0.2em] uppercase mb-6" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
                 已完成
               </div>
               <div className="text-4xl" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 700, color: '#FFFFFF' }}>

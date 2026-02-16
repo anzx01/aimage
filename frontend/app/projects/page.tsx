@@ -247,26 +247,26 @@ export default function ProjectsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-[1200px] mx-auto px-8 py-12 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+      <main className="max-w-[1200px] mx-auto px-8 py-16 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
         {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-[40px] font-bold gradient-text mb-4" style={{ fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.5px' }}>
+        <div className="mb-16">
+          <h1 className="text-[40px] font-bold gradient-text mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.5px' }}>
             我的项目
           </h1>
-          <p className="text-lg text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <p className="text-lg text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '3.5' }}>
             管理您的所有视频项目
           </p>
         </div>
 
         {/* Search Bar */}
-        <div className="mb-6">
+        <div className="mb-8">
           <div className="relative">
             <input
               type="text"
               placeholder="搜索项目标题或描述..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-6 py-4 pl-12 bg-[#151520] border border-[#2A2A3A] rounded-xl text-white placeholder-[#A0A0B0] focus:outline-none focus:border-[#8B5CF6] transition-colors"
+              className="w-full px-6 py-5 pl-12 bg-[#151520] border border-[#2A2A3A] rounded-xl text-white placeholder-[#A0A0B0] focus:outline-none focus:border-[#8B5CF6] transition-colors"
               style={{ fontFamily: 'Inter, sans-serif' }}
             />
             <svg
@@ -281,12 +281,12 @@ export default function ProjectsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-10">
           {filters.map((f) => (
             <button
               key={f.id}
               onClick={() => setFilter(f.id as any)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+              className={`px-6 py-3 rounded-full text-sm font-medium transition-all duration-300 ${
                 filter === f.id
                   ? 'bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] text-white'
                   : 'bg-[#151520] text-[#A0A0B0] hover:text-white border border-[#2A2A3A]'
@@ -301,7 +301,7 @@ export default function ProjectsPage() {
         {/* Projects Grid */}
         {projects.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-[#A0A0B0] text-lg mb-6" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <div className="text-[#A0A0B0] text-lg mb-8" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '3.5' }}>
               还没有项目
             </div>
             <Link
@@ -313,7 +313,7 @@ export default function ProjectsPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project) => {
               const status = statusConfig[project.status as keyof typeof statusConfig];
               const task = project.generation_tasks?.[0];
@@ -332,38 +332,38 @@ export default function ProjectsPage() {
                         controls
                       />
                     ) : (
-                      <div className="text-[#A0A0B0] text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <div className="text-[#A0A0B0] text-sm" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '3' }}>
                         {project.status === 'processing' ? '生成中...' : '暂无预览'}
                       </div>
                     )}
                   </div>
 
                   {/* Content */}
-                  <div className="p-6">
+                  <div className="p-8">
                     {/* Status Badge */}
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-5">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${status.bg} ${status.color}`} style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                         {status.label}
                       </span>
-                      <span className="text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <span className="text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '3' }}>
                         {new Date(project.created_at).toLocaleDateString('zh-CN')}
                       </span>
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-lg font-bold text-white mb-2 line-clamp-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                    <h3 className="text-lg font-bold text-white mb-3 line-clamp-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
                       {project.title}
                     </h3>
 
                     {/* Description */}
                     {project.description && (
-                      <p className="text-sm text-[#A0A0B0] mb-4 line-clamp-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <p className="text-sm text-[#A0A0B0] mb-5 line-clamp-2" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '3' }}>
                         {project.description}
                       </p>
                     )}
 
                     {/* Meta */}
-                    <div className="flex items-center gap-4 mb-4 text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <div className="flex items-center gap-4 mb-5 text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
                       <span>模式: {project.mode === 'basic' ? '基础' : '高级'}</span>
                       <span>消耗: {project.credits_used} 积分</span>
                     </div>
