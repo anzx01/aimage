@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![AIMAGE Logo](https://via.placeholder.com/200x80/8B5CF6/FFFFFF?text=AIMAGE)
+![1771251713958](image/README/1771251713958.png)
 
 **一键生成专业级产品视频的AI平台**
 
@@ -62,6 +62,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 4. **配置数据库**
 
 在 Supabase 中执行以下 SQL 文件：
+
 - `supabase/complete_migration.sql` - 完整的数据库结构
 - `supabase/migrations/20260215121200_seed_showcase_cases.sql` - 示例数据
 
@@ -114,6 +115,7 @@ aimage/
 ## 🛠️ 技术栈
 
 ### 前端
+
 - **框架**: Next.js 15 (App Router)
 - **语言**: TypeScript 5.0
 - **样式**: Tailwind CSS 4.0
@@ -121,12 +123,14 @@ aimage/
 - **UI组件**: 自定义组件库
 
 ### 后端
+
 - **数据库**: Supabase (PostgreSQL)
 - **认证**: Supabase Auth
 - **存储**: Supabase Storage
 - **实时**: Supabase Realtime
 
 ### 部署
+
 - **前端**: Vercel
 - **数据库**: Supabase Cloud
 
@@ -151,11 +155,13 @@ aimage/
 支持两种生成模式：
 
 **基础模式**
+
 - 文字描述生成
 - 消耗 10 积分
 - 适合快速生成
 
 **高级模式**
+
 - 支持上传图片/视频素材
 - 更多自定义选项
 - 消耗 20 积分
@@ -201,6 +207,7 @@ aimage/
 ### Row Level Security (RLS)
 
 所有数据表都启用了 RLS 策略，确保：
+
 - 用户只能访问自己的数据
 - 管理员有特殊权限
 - 公开数据（如案例库）对所有人可见
