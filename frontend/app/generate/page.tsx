@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
+import { calculateCreditsNeeded, deductCredits } from '@/lib/credits';
 import FileUpload from '@/components/FileUpload';
 
 type Mode = 'basic' | 'advanced';
@@ -53,9 +54,7 @@ export default function GeneratePage() {
       }
 
       // 检查积分是否足够
-      const creditsNeeded = mode === 'basic'
-        ? (duration <= 15 ? 1 : duration <= 30 ? 2 : 3)
-        : (duration <= 15 ? 2 : duration <= 30 ? 4 : 6);
+      const creditsNeeded = calculateCreditsNeeded(mode, duration);
 
       if (user.credits < creditsNeeded) {
         throw new Error('积分不足，请充值');
@@ -69,6 +68,7 @@ export default function GeneratePage() {
           title,
           description,
           mode,
+          project_type: mode, // 添加 project_type 字段
           status: 'draft',
           credits_used: creditsNeeded,
         })
@@ -125,19 +125,18 @@ export default function GeneratePage() {
       if (taskError) throw taskError;
 
       // 扣除积分
-      const { error: creditError } = await supabase
-        .from('credit_transactions')
-        .insert({
-          user_id: user.id,
-          amount: -creditsNeeded,
-          type: 'deduct',
-          description: `生成视频: ${title}`,
-          related_project_id: project.id,
-        });
+      const deductResult = await deductCredits(
+        user.id,
+        creditsNeeded,
+        `生成视频: ${title}`,
+        project.id
+      );
 
-      if (creditError) throw creditError;
+      if (!deductResult.success) {
+        throw new Error(deductResult.error || '扣除积分失败');
+      }
 
-      // 更新用户积分
+      // 更新用户积分显示
       await checkAuth();
 
       // 跳转到项目详情页
@@ -216,66 +215,66 @@ export default function GeneratePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-[1200px] mx-auto px-8 py-12 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+      <main className="max-w-[1200px] mx-auto px-8 py-16 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
         <div>
           {/* Header */}
-          <div className="mb-12">
-            <h1 className="text-[40px] font-bold gradient-text mb-4" style={{ fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.5px' }}>
+          <div className="mb-16">
+            <h1 className="text-[40px] font-bold gradient-text mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.5px' }}>
               一键成片
             </h1>
-            <p className="text-lg text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <p className="text-lg text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '3.5' }}>
               快速生成高质量视频内容
             </p>
           </div>
 
           {/* Mode Tabs */}
-          <div className="flex gap-4 mb-8">
+          <div className="flex gap-6 mb-10">
             <button
               type="button"
               onClick={() => setMode('basic')}
-              className={`flex-1 px-6 py-4 rounded-xl border-2 transition-all duration-300 ${
+              className={`flex-1 px-6 py-5 rounded-xl border-2 transition-all duration-300 ${
                 mode === 'basic'
                   ? 'border-[#8B5CF6] bg-[#8B5CF6]/10'
                   : 'border-[#2A2A3A] bg-[#151520] hover:border-[#8B5CF6]/50'
               }`}
             >
-              <div className="text-lg font-bold text-white mb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              <div className="text-lg font-bold text-white mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif', lineHeight: '2.5' }}>
                 基础模式
               </div>
-              <div className="text-sm text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <div className="text-sm text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '2.5' }}>
                 AI 自动生成，快速出片
               </div>
             </button>
             <button
               type="button"
               onClick={() => setMode('advanced')}
-              className={`flex-1 px-6 py-4 rounded-xl border-2 transition-all duration-300 ${
+              className={`flex-1 px-6 py-5 rounded-xl border-2 transition-all duration-300 ${
                 mode === 'advanced'
                   ? 'border-[#8B5CF6] bg-[#8B5CF6]/10'
                   : 'border-[#2A2A3A] bg-[#151520] hover:border-[#8B5CF6]/50'
               }`}
             >
-              <div className="text-lg font-bold text-white mb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              <div className="text-lg font-bold text-white mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif', lineHeight: '2.5' }}>
                 高级模式
               </div>
-              <div className="text-sm text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <div className="text-sm text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '2.5' }}>
                 上传素材，精细控制
               </div>
             </button>
           </div>
 
           {/* Form */}
-          <div className="bg-[#151520] border border-[#2A2A3A] rounded-2xl p-8">
+          <div className="bg-[#151520] border border-[#2A2A3A] rounded-2xl p-10">
             {error && (
-              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
+              <div className="mb-8 p-5 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm" style={{ lineHeight: '2.5' }}>
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-12">
               {/* Title */}
               <div>
-                <label className="block text-sm font-medium text-white mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                <label className="block text-sm font-medium text-white mb-5" style={{ fontFamily: 'Space Grotesk, sans-serif', lineHeight: '2.5' }}>
                   视频标题 *
                 </label>
                 <input
@@ -283,7 +282,7 @@ export default function GeneratePage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
-                  className="w-full px-4 py-3 bg-[#0A0A0F] border border-[#2A2A3A] rounded-lg text-white placeholder-[#A0A0B0] focus:outline-none focus:border-[#8B5CF6] transition-colors"
+                  className="w-full px-5 py-4 bg-[#0A0A0F] border border-[#2A2A3A] rounded-lg text-white placeholder-[#A0A0B0] focus:outline-none focus:border-[#8B5CF6] transition-colors"
                   placeholder="例如：春季新品连衣裙展示"
                   style={{ fontFamily: 'Inter, sans-serif' }}
                 />
@@ -291,23 +290,23 @@ export default function GeneratePage() {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-white mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                <label className="block text-sm font-medium text-white mb-5" style={{ fontFamily: 'Space Grotesk, sans-serif', lineHeight: '2.5' }}>
                   视频描述
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-3 bg-[#0A0A0F] border border-[#2A2A3A] rounded-lg text-white placeholder-[#A0A0B0] focus:outline-none focus:border-[#8B5CF6] transition-colors resize-none"
+                  className="w-full px-5 py-4 bg-[#0A0A0F] border border-[#2A2A3A] rounded-lg text-white placeholder-[#A0A0B0] focus:outline-none focus:border-[#8B5CF6] transition-colors resize-none"
                   placeholder="描述您想要生成的视频内容..."
-                  style={{ fontFamily: 'Inter, sans-serif' }}
+                  style={{ fontFamily: 'Inter, sans-serif', lineHeight: '2.5' }}
                 />
               </div>
 
               {/* File Upload - Advanced Mode Only */}
               {mode === 'advanced' && (
                 <div>
-                  <label className="block text-sm font-medium text-white mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                  <label className="block text-sm font-medium text-white mb-5" style={{ fontFamily: 'Space Grotesk, sans-serif', lineHeight: '2.5' }}>
                     上传素材 *
                   </label>
                   <FileUpload
@@ -316,7 +315,7 @@ export default function GeneratePage() {
                     onUploadComplete={handleFileUpload}
                     onUploadError={handleFileUploadError}
                   />
-                  <p className="mt-2 text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  <p className="mt-3 text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '2.5' }}>
                     已上传 {uploadedFiles.length} 个文件
                   </p>
                 </div>
@@ -324,25 +323,25 @@ export default function GeneratePage() {
 
               {/* Style */}
               <div>
-                <label className="block text-sm font-medium text-white mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                <label className="block text-sm font-medium text-white mb-5" style={{ fontFamily: 'Space Grotesk, sans-serif', lineHeight: '2.5' }}>
                   视频风格 *
                 </label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-5">
                   {styles.map((s) => (
                     <button
                       key={s.id}
                       type="button"
                       onClick={() => setStyle(s.id)}
-                      className={`p-4 rounded-lg border-2 text-left transition-all duration-300 ${
+                      className={`p-5 rounded-lg border-2 text-left transition-all duration-300 ${
                         style === s.id
                           ? 'border-[#8B5CF6] bg-[#8B5CF6]/10'
                           : 'border-[#2A2A3A] hover:border-[#8B5CF6]/50'
                       }`}
                     >
-                      <div className="text-sm font-semibold text-white mb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                      <div className="text-sm font-semibold text-white mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif', lineHeight: '2.5' }}>
                         {s.name}
                       </div>
-                      <div className="text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <div className="text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '2.5' }}>
                         {s.description}
                       </div>
                     </button>
@@ -352,25 +351,25 @@ export default function GeneratePage() {
 
               {/* Duration */}
               <div>
-                <label className="block text-sm font-medium text-white mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                <label className="block text-sm font-medium text-white mb-5" style={{ fontFamily: 'Space Grotesk, sans-serif', lineHeight: '2.5' }}>
                   视频时长 *
                 </label>
-                <div className="flex gap-4">
+                <div className="flex gap-5">
                   {durations.map((d) => (
                     <button
                       key={d.value}
                       type="button"
                       onClick={() => setDuration(d.value)}
-                      className={`flex-1 p-4 rounded-lg border-2 transition-all duration-300 ${
+                      className={`flex-1 p-5 rounded-lg border-2 transition-all duration-300 ${
                         duration === d.value
                           ? 'border-[#8B5CF6] bg-[#8B5CF6]/10'
                           : 'border-[#2A2A3A] hover:border-[#8B5CF6]/50'
                       }`}
                     >
-                      <div className="text-lg font-bold text-white mb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                      <div className="text-lg font-bold text-white mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif', lineHeight: '2.5' }}>
                         {d.label}
                       </div>
-                      <div className="text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <div className="text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif', lineHeight: '2.5' }}>
                         消耗 {d.credits} 积分
                       </div>
                     </button>
@@ -382,7 +381,7 @@ export default function GeneratePage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-8 py-4 bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] text-white text-base font-bold rounded-full hover:scale-105 transition-all duration-300 shadow-lg shadow-[#8B5CF6]/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-8 py-5 bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] text-white text-base font-bold rounded-full hover:scale-105 transition-all duration-300 shadow-lg shadow-[#8B5CF6]/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontFamily: 'Space Grotesk, sans-serif' }}
               >
                 {loading ? '生成中...' : '开始生成'}

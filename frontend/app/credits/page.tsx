@@ -112,10 +112,90 @@ export default function CreditsPage() {
     { id: 'enterprise', credits: 500, price: 399, bonus: 100 },
   ];
 
-  const handlePurchase = (packageId: string) => {
+  const handlePurchase = async (packageId: string) => {
     setSelectedPackage(packageId);
-    // TODO: 集成支付功能
-    alert('支付功能即将推出');
+
+    try {
+      if (!user) {
+        alert('请先登录');
+        return;
+      }
+
+      // 获取套餐信息
+      const pkg = packages.find(p => p.id === packageId);
+      if (!pkg) {
+        alert('无效的套餐');
+        return;
+      }
+
+      const total_credits = pkg.credits + pkg.bonus;
+
+      // 获取当前积分 - 使用 auth.users 表中的 raw_user_meta_data
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+
+      if (authError || !authUser) {
+        console.error('获取认证用户失败:', authError);
+        alert('购买失败：无法获取用户信息');
+        return;
+      }
+
+      // 尝试从 users 表获取积分
+      let current_credits = 0;
+      const { data: userData, error: getUserError } = await supabase
+        .from('users')
+        .select('credits')
+        .eq('id', user.id)
+        .single();
+
+      if (!getUserError && userData) {
+        current_credits = userData.credits || 0;
+      } else {
+        console.warn('无法从 users 表获取积分，使用默认值 0');
+      }
+
+      const new_credits = current_credits + total_credits;
+
+      // 更新用户积分
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ credits: new_credits })
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error('更新用户积分失败:', updateError);
+        alert('购买失败：' + updateError.message + '\n\n请确保 users 表有 credits 字段');
+        return;
+      }
+
+      // 尝试创建交易记录（如果失败也不影响购买）
+      try {
+        await supabase
+          .from('credit_transactions')
+          .insert({
+            user_id: user.id,
+            amount: total_credits,
+            type: 'purchase',
+            description: `购买积分套餐 - ${pkg.credits}积分 + ${pkg.bonus}赠送`,
+          });
+      } catch (txError) {
+        console.warn('创建交易记录失败（不影响购买）:', txError);
+      }
+
+      alert(`购买成功！获得 ${total_credits} 积分，当前余额：${new_credits} 积分`);
+
+      // 刷新用户信息
+      await checkAuth();
+
+      // 刷新交易记录
+      if (showHistory) {
+        loadTransactions();
+      }
+    } catch (error) {
+      console.error('购买失败:', error);
+      alert('购买失败，请稍后重试');
+    } finally {
+      setSelectedPackage(null);
+    }
   };
 
   return (
