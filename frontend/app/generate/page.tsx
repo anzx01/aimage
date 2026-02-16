@@ -5,14 +5,19 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
+import FileUpload from '@/components/FileUpload';
+
+type Mode = 'basic' | 'advanced';
 
 export default function GeneratePage() {
   const router = useRouter();
   const { user, loading: authLoading, checkAuth } = useAuthStore();
+  const [mode, setMode] = useState<Mode>('basic');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [style, setStyle] = useState('modern');
   const [duration, setDuration] = useState(15);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ url: string; file: File }>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,6 +31,14 @@ export default function GeneratePage() {
     }
   }, [user, authLoading, router]);
 
+  const handleFileUpload = (url: string, file: File) => {
+    setUploadedFiles(prev => [...prev, { url, file }]);
+  };
+
+  const handleFileUploadError = (error: string) => {
+    setError(error);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -34,8 +47,16 @@ export default function GeneratePage() {
     try {
       if (!user) throw new Error('请先登录');
 
+      // 高级模式需要至少上传一个文件
+      if (mode === 'advanced' && uploadedFiles.length === 0) {
+        throw new Error('请至少上传一个文件');
+      }
+
       // 检查积分是否足够
-      const creditsNeeded = duration <= 15 ? 1 : duration <= 30 ? 2 : 3;
+      const creditsNeeded = mode === 'basic'
+        ? (duration <= 15 ? 1 : duration <= 30 ? 2 : 3)
+        : (duration <= 15 ? 2 : duration <= 30 ? 4 : 6);
+
       if (user.credits < creditsNeeded) {
         throw new Error('积分不足，请充值');
       }
@@ -47,7 +68,7 @@ export default function GeneratePage() {
           user_id: user.id,
           title,
           description,
-          mode: 'basic',
+          mode,
           status: 'draft',
           credits_used: creditsNeeded,
         })
@@ -56,17 +77,48 @@ export default function GeneratePage() {
 
       if (projectError) throw projectError;
 
+      // 如果是高级模式，保存上传的文件到 assets 表
+      if (mode === 'advanced' && uploadedFiles.length > 0) {
+        for (const { url, file } of uploadedFiles) {
+          // 创建 asset 记录
+          const { data: asset, error: assetError } = await supabase
+            .from('assets')
+            .insert({
+              user_id: user.id,
+              type: file.type.startsWith('image/') ? 'image' : 'video',
+              file_url: url,
+              file_name: file.name,
+              file_size: file.size,
+            })
+            .select()
+            .single();
+
+          if (assetError) throw assetError;
+
+          // 关联到项目
+          const { error: projectAssetError } = await supabase
+            .from('project_assets')
+            .insert({
+              project_id: project.id,
+              asset_id: asset.id,
+            });
+
+          if (projectAssetError) throw projectAssetError;
+        }
+      }
+
       // 创建生成任务
       const { error: taskError } = await supabase
         .from('generation_tasks')
         .insert({
           project_id: project.id,
           user_id: user.id,
-          model_name: 'veo3.1-fast',
+          model_name: mode === 'basic' ? 'veo3.1-fast' : 'veo3.1-pro',
           status: 'pending',
           config: {
             style,
             duration,
+            mode,
           },
         });
 
@@ -88,8 +140,8 @@ export default function GeneratePage() {
       // 更新用户积分
       await checkAuth();
 
-      // 跳转到项目详情页（暂时跳转到 dashboard）
-      router.push('/dashboard');
+      // 跳转到项目详情页
+      router.push(`/projects/${project.id}`);
     } catch (err: any) {
       setError(err.message || '创建失败，请稍后重试');
     } finally {
@@ -117,9 +169,9 @@ export default function GeneratePage() {
   ];
 
   const durations = [
-    { value: 15, label: '15秒', credits: 1 },
-    { value: 30, label: '30秒', credits: 2 },
-    { value: 60, label: '60秒', credits: 3 },
+    { value: 15, label: '15秒', credits: mode === 'basic' ? 1 : 2 },
+    { value: 30, label: '30秒', credits: mode === 'basic' ? 2 : 4 },
+    { value: 60, label: '60秒', credits: mode === 'basic' ? 3 : 6 },
   ];
 
   return (
@@ -136,6 +188,9 @@ export default function GeneratePage() {
         <nav className="flex items-center gap-8">
           <Link href="/dashboard" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             工作台
+          </Link>
+          <Link href="/projects" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+            我的项目
           </Link>
           <Link href="/showcase" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             案例库
@@ -166,6 +221,42 @@ export default function GeneratePage() {
             <p className="text-lg text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
               快速生成高质量视频内容
             </p>
+          </div>
+
+          {/* Mode Tabs */}
+          <div className="flex gap-4 mb-8">
+            <button
+              type="button"
+              onClick={() => setMode('basic')}
+              className={`flex-1 px-6 py-4 rounded-xl border-2 transition-all duration-300 ${
+                mode === 'basic'
+                  ? 'border-[#8B5CF6] bg-[#8B5CF6]/10'
+                  : 'border-[#2A2A3A] bg-[#151520] hover:border-[#8B5CF6]/50'
+              }`}
+            >
+              <div className="text-lg font-bold text-white mb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                基础模式
+              </div>
+              <div className="text-sm text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                AI 自动生成，快速出片
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('advanced')}
+              className={`flex-1 px-6 py-4 rounded-xl border-2 transition-all duration-300 ${
+                mode === 'advanced'
+                  ? 'border-[#8B5CF6] bg-[#8B5CF6]/10'
+                  : 'border-[#2A2A3A] bg-[#151520] hover:border-[#8B5CF6]/50'
+              }`}
+            >
+              <div className="text-lg font-bold text-white mb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                高级模式
+              </div>
+              <div className="text-sm text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                上传素材，精细控制
+              </div>
+            </button>
           </div>
 
           {/* Form */}
@@ -207,6 +298,24 @@ export default function GeneratePage() {
                   style={{ fontFamily: 'Inter, sans-serif' }}
                 />
               </div>
+
+              {/* File Upload - Advanced Mode Only */}
+              {mode === 'advanced' && (
+                <div>
+                  <label className="block text-sm font-medium text-white mb-3" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+                    上传素材 *
+                  </label>
+                  <FileUpload
+                    type="both"
+                    maxSize={100}
+                    onUploadComplete={handleFileUpload}
+                    onUploadError={handleFileUploadError}
+                  />
+                  <p className="mt-2 text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    已上传 {uploadedFiles.length} 个文件
+                  </p>
+                </div>
+              )}
 
               {/* Style */}
               <div>

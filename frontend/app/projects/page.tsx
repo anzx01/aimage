@@ -23,6 +23,12 @@ interface Project {
   }>;
 }
 
+// Helper function to ensure HTTPS URLs
+const ensureHttps = (url: string | null): string | null => {
+  if (!url) return null;
+  return url.replace(/^http:\/\//i, 'https://');
+};
+
 export default function ProjectsPage() {
   const router = useRouter();
   const { user, loading: authLoading, checkAuth } = useAuthStore();
@@ -49,18 +55,19 @@ export default function ProjectsPage() {
   const loadProjects = async () => {
     try {
       setLoading(true);
+
+      // 检查用户是否存在
+      if (!user?.id) {
+        console.error('用户 ID 不存在');
+        setProjects([]);
+        return;
+      }
+
+      // 首先尝试只查询 projects 表
       let query = supabase
         .from('projects')
-        .select(`
-          *,
-          generation_tasks (
-            id,
-            status,
-            model_name,
-            result_url
-          )
-        `)
-        .eq('user_id', user!.id)
+        .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (filter !== 'all') {
@@ -69,10 +76,70 @@ export default function ProjectsPage() {
 
       const { data, error } = await query;
 
-      if (error) throw error;
-      setProjects(data || []);
-    } catch (err) {
-      console.error('加载项目失败:', err);
+      if (error) {
+        console.error('Supabase 查询错误:', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          fullError: JSON.stringify(error, null, 2)
+        });
+        throw error;
+      }
+
+      // 如果成功，尝试加载关联的 generation_tasks
+      if (data) {
+        const projectsWithTasks = await Promise.all(
+          data.map(async (project) => {
+            try {
+              const { data: tasks, error: tasksError } = await supabase
+                .from('generation_tasks')
+                .select('id, status, model_name, result_url')
+                .eq('project_id', project.id)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+              if (tasksError) {
+                console.warn('加载任务失败:', {
+                  projectId: project.id,
+                  error: tasksError.message
+                });
+              }
+
+              return {
+                ...project,
+                generation_tasks: tasks || []
+              };
+            } catch (taskError: any) {
+              // 如果加载任务失败，只返回项目数据
+              console.warn('加载任务异常:', {
+                projectId: project.id,
+                error: taskError?.message || String(taskError)
+              });
+              return {
+                ...project,
+                generation_tasks: []
+              };
+            }
+          })
+        );
+
+        setProjects(projectsWithTasks);
+      } else {
+        setProjects([]);
+      }
+    } catch (err: any) {
+      console.error('加载项目失败:', {
+        name: err?.name,
+        message: err?.message,
+        details: err?.details,
+        hint: err?.hint,
+        code: err?.code,
+        stack: err?.stack,
+        fullError: JSON.stringify(err, Object.getOwnPropertyNames(err))
+      });
+      // 设置空数组而不是让页面崩溃
+      setProjects([]);
     } finally {
       setLoading(false);
     }
@@ -99,9 +166,17 @@ export default function ProjectsPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-[#0A0A0F] flex items-center justify-center">
-        <div className="text-white">加载中...</div>
-      </div>
+      <>
+        <style jsx global>{`
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@400;500;700&display=swap');
+        `}</style>
+        <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0B1120 0%, #1A1F35 50%, #0F1419 100%)' }}>
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-t-[#D99E46] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5' }}>加载中...</p>
+          </div>
+        </div>
+      </>
     );
   }
 
@@ -219,7 +294,7 @@ export default function ProjectsPage() {
                   <div className="relative aspect-video bg-gradient-to-br from-[#8B5CF6]/20 to-[#EC4899]/20 flex items-center justify-center">
                     {task?.result_url ? (
                       <video
-                        src={task.result_url}
+                        src={ensureHttps(task.result_url) || ''}
                         className="w-full h-full object-cover"
                         controls
                       />
