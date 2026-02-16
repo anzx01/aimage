@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
+import AvatarUpload from '@/components/AvatarUpload';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -206,6 +207,24 @@ export default function SettingsPage() {
               {success}
             </div>
           )}
+
+          {/* Account Stats */}
+          <div className="bg-[#151520] border border-[#2A2A3A] rounded-2xl p-8 mb-8">
+            <h2 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              个人头像
+            </h2>
+
+            <div className="flex justify-center">
+              <AvatarUpload
+                currentAvatar={user.avatar_url}
+                onUploadComplete={(url) => {
+                  setSuccess('头像更新成功');
+                  checkAuth(); // 刷新用户信息
+                }}
+                userId={user.id}
+              />
+            </div>
+          </div>
 
           {/* Account Stats */}
           <div className="bg-[#151520] border border-[#2A2A3A] rounded-2xl p-8 mb-8">

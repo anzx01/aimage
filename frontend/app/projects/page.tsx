@@ -35,6 +35,7 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'draft' | 'processing' | 'completed' | 'failed'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     checkAuth();
@@ -50,7 +51,7 @@ export default function ProjectsPage() {
     if (user) {
       loadProjects();
     }
-  }, [user, filter]);
+  }, [user, filter, searchQuery]);
 
   const loadProjects = async () => {
     try {
@@ -72,6 +73,11 @@ export default function ProjectsPage() {
 
       if (filter !== 'all') {
         query = query.eq('status', filter);
+      }
+
+      // 添加搜索功能
+      if (searchQuery.trim()) {
+        query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
       }
 
       const { data, error } = await query;
@@ -250,6 +256,28 @@ export default function ProjectsPage() {
           <p className="text-lg text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
             管理您的所有视频项目
           </p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="搜索项目标题或描述..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-6 py-4 pl-12 bg-[#151520] border border-[#2A2A3A] rounded-xl text-white placeholder-[#A0A0B0] focus:outline-none focus:border-[#8B5CF6] transition-colors"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            />
+            <svg
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#A0A0B0]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
         </div>
 
         {/* Filters */}
