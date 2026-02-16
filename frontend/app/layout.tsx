@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +22,12 @@ export const metadata: Metadata = {
     title: "AIMAGE - AI视频生成平台",
     description: "聚合顶级AI模型，一站式生成TikTok爆款视频",
   },
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
   themeColor: "#8B5CF6",
 };
 

@@ -113,8 +113,8 @@ export default function DigitalHumansPage() {
     <div className="min-h-screen bg-[#0A0A0F]">
       <Header />
 
-      <main className="px-[120px] py-12">
-        <div className="max-w-[1200px] mx-auto">
+      <main className="max-w-[1200px] mx-auto px-8 py-12 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+        <div className="mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-12">
             <div>

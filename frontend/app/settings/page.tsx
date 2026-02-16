@@ -158,14 +158,17 @@ export default function SettingsPage() {
           <Link href="/dashboard" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             工作台
           </Link>
+          <Link href="/generate" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+            一键成片
+          </Link>
+          <Link href="/digital-humans" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+            数字人
+          </Link>
           <Link href="/projects" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             我的项目
           </Link>
           <Link href="/showcase" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             案例库
-          </Link>
-          <Link href="/generate" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-            一键成片
           </Link>
         </nav>
 
@@ -180,8 +183,8 @@ export default function SettingsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="px-[120px] py-12">
-        <div className="max-w-[800px] mx-auto">
+      <main className="max-w-[800px] mx-auto px-8 py-12 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+        <div>
           {/* Header */}
           <div className="mb-12">
             <h1 className="text-[40px] font-bold gradient-text mb-4" style={{ fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.5px' }}>

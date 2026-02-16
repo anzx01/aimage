@@ -221,14 +221,17 @@ export default function ProjectDetailPage() {
           <Link href="/dashboard" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             工作台
           </Link>
+          <Link href="/generate" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+            一键成片
+          </Link>
+          <Link href="/digital-humans" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+            数字人
+          </Link>
           <Link href="/projects" className="text-sm text-white font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             我的项目
           </Link>
           <Link href="/showcase" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             案例库
-          </Link>
-          <Link href="/generate" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-            一键成片
           </Link>
         </nav>
 
@@ -243,7 +246,7 @@ export default function ProjectDetailPage() {
       </header>
 
       {/* Main Content */}
-      <main className="px-[120px] py-12">
+      <main className="max-w-[1400px] mx-auto px-8 py-12 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
         {/* Back Button */}
         <Link
           href="/projects"

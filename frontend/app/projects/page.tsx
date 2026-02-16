@@ -202,7 +202,8 @@ export default function ProjectsPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0F]">
       {/* Header */}
-      <header className="flex items-center justify-between px-[120px] h-20 border-b border-[#2A2A3A] bg-[#0A0A0F]/80 backdrop-blur-xl sticky top-0 z-50">
+      <header className="border-b border-[#2A2A3A] bg-[#0A0A0F]/80 backdrop-blur-xl sticky top-0 z-50">
+        <div className="max-w-[1200px] mx-auto px-8 h-20 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gradient-to-br from-[#8B5CF6] to-[#EC4899] rounded-lg" />
           <span className="text-xl font-bold text-white" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
@@ -214,14 +215,17 @@ export default function ProjectsPage() {
           <Link href="/dashboard" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             工作台
           </Link>
+          <Link href="/generate" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+            一键成片
+          </Link>
+          <Link href="/digital-humans" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+            数字人
+          </Link>
           <Link href="/projects" className="text-sm text-white font-medium" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             我的项目
           </Link>
           <Link href="/showcase" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
             案例库
-          </Link>
-          <Link href="/generate" className="text-sm text-[#A0A0B0] hover:text-white transition-colors" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-            一键成片
           </Link>
         </nav>
 
@@ -233,10 +237,11 @@ export default function ProjectsPage() {
             </span>
           </div>
         </div>
+        </div>
       </header>
 
       {/* Main Content */}
-      <main className="px-[120px] py-12">
+      <main className="max-w-[1200px] mx-auto px-8 py-12 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-[40px] font-bold gradient-text mb-4" style={{ fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.5px' }}>
