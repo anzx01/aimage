@@ -3,7 +3,9 @@
     "allow": [
       "Bash(dir:*)",
       "Bash(nul)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

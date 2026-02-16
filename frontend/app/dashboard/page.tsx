@@ -117,13 +117,13 @@ export default function DashboardPage() {
         .stagger-4 { animation-delay: 0.4s; opacity: 0; }
       `}</style>
 
-      <div className="min-h-screen relative" style={{ background: 'linear-gradient(135deg, #0B1120 0%, #1A1F35 50%, #0F1419 100%)' }}>
+      <div className="min-h-screen relative flex flex-col" style={{ background: 'linear-gradient(135deg, #0B1120 0%, #1A1F35 50%, #0F1419 100%)' }}>
         {/* Subtle Grid Pattern */}
         <div className="fixed inset-0 opacity-[0.015] pointer-events-none" style={{ backgroundImage: 'linear-gradient(#D99E46 1px, transparent 1px), linear-gradient(90deg, #D99E46 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
 
         {/* Header */}
-        <header className="sticky top-0 z-50 backdrop-blur-xl border-b" style={{ background: 'rgba(11, 17, 32, 0.8)', borderColor: 'rgba(217, 158, 70, 0.1)' }}>
-          <div className="max-w-[1400px] mx-auto px-8 h-20 flex items-center justify-between">
+        <header className="sticky top-0 z-50 backdrop-blur-xl border-b w-full" style={{ background: 'rgba(11, 17, 32, 0.8)', borderColor: 'rgba(217, 158, 70, 0.1)' }}>
+          <div className="max-w-[1200px] mx-auto px-8 h-20 flex items-center justify-between" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
             <Link href="/dashboard" className="flex items-baseline gap-3 group">
               <div className="w-2 h-2 rounded-full transition-all duration-300 group-hover:w-8" style={{ background: '#D99E46' }} />
               <span className="text-2xl" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 700, color: '#FFFFFF' }}>
@@ -136,11 +136,17 @@ export default function DashboardPage() {
                 工作台
                 <div className="absolute -bottom-1 left-0 w-full h-0.5" style={{ background: '#D99E46' }} />
               </Link>
-              <Link href="/showcase" className="text-sm tracking-wide uppercase transition-colors duration-300 hover:text-white" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
-                案例库
-              </Link>
               <Link href="/generate" className="text-sm tracking-wide uppercase transition-colors duration-300 hover:text-white" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
                 一键成片
+              </Link>
+              <Link href="/digital-humans" className="text-sm tracking-wide uppercase transition-colors duration-300 hover:text-white" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
+                数字人
+              </Link>
+              <Link href="/projects" className="text-sm tracking-wide uppercase transition-colors duration-300 hover:text-white" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
+                我的项目
+              </Link>
+              <Link href="/showcase" className="text-sm tracking-wide uppercase transition-colors duration-300 hover:text-white" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8B9BB5', fontWeight: 500 }}>
+                案例库
               </Link>
             </nav>
 
@@ -182,7 +188,7 @@ export default function DashboardPage() {
         </header>
 
       {/* Main Content */}
-      <main className="max-w-[1400px] mx-auto px-8 py-16">
+      <main className="max-w-[1200px] mx-auto px-8 py-16 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
         {/* Welcome Section */}
         <div className="mb-20 animate-slide-in">
           <div className="flex items-baseline gap-4 mb-4">

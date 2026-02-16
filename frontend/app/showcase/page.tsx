@@ -279,8 +279,8 @@ export default function ShowcasePage() {
       <Header />
 
       {/* Main Content */}
-      <main className="px-4 md:px-8 lg:px-[120px] py-8 md:py-12">
-        <div className="max-w-[1200px] mx-auto">
+      <main className="max-w-[1200px] mx-auto px-4 md:px-8 py-8 md:py-12 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+        <div className="mx-auto">
           {/* Header */}
           <div className="mb-8 md:mb-12">
             <h1 className="text-2xl md:text-3xl lg:text-[40px] font-bold gradient-text mb-3 md:mb-4" style={{ fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.5px' }}>

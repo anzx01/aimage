@@ -13,8 +13,10 @@ interface HeaderProps {
 export function Header({ user, onLogout, currentPath = '/dashboard' }: HeaderProps) {
   const navItems = [
     { href: '/dashboard', label: '工作台' },
-    { href: '/showcase', label: '案例库' },
     { href: '/generate', label: '一键成片' },
+    { href: '/digital-humans', label: '数字人' },
+    { href: '/projects', label: '我的项目' },
+    { href: '/showcase', label: '案例库' },
   ];
 
   return (

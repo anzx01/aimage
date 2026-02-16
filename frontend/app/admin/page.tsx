@@ -106,8 +106,8 @@ export default function AdminPage() {
     <div className="min-h-screen bg-[#0A0A0F]">
       <Header />
 
-      <main className="px-[120px] py-12">
-        <div className="max-w-[1400px] mx-auto">
+      <main className="max-w-[1400px] mx-auto px-8 py-12 w-full" style={{ marginLeft: 'auto', marginRight: 'auto' }}>
+        <div>
           {/* Header */}
           <div className="mb-12">
             <h1
