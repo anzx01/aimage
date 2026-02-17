@@ -15,6 +15,7 @@ interface Project {
   credits_used: number;
   created_at: string;
   updated_at: string;
+  video_url?: string | null;
   generation_tasks?: Array<{
     id: string;
     status: string;
@@ -91,6 +92,15 @@ export default function ProjectsPage() {
           fullError: JSON.stringify(error, null, 2)
         });
         throw error;
+      }
+
+      // 调试：打印获取到的数据
+      console.log('获取到的项目数据:', data);
+      if (data && data.length > 0) {
+        console.log('第一个项目的完整数据:');
+        console.log(data[0]);
+        console.log('第一个项目的video_url:', data[0].video_url);
+        console.log('第一个项目的project_type:', data[0].project_type);
       }
 
       // 如果成功，尝试加载关联的 generation_tasks
@@ -317,6 +327,8 @@ export default function ProjectsPage() {
             {projects.map((project) => {
               const status = statusConfig[project.status as keyof typeof statusConfig];
               const task = project.generation_tasks?.[0];
+              // 优先使用 project.video_url，如果没有再使用 task.result_url
+              const videoUrl = project.video_url || task?.result_url;
 
               return (
                 <div
@@ -325,9 +337,9 @@ export default function ProjectsPage() {
                 >
                   {/* Thumbnail */}
                   <div className="relative aspect-video bg-gradient-to-br from-[#8B5CF6]/20 to-[#EC4899]/20 flex items-center justify-center">
-                    {task?.result_url ? (
+                    {videoUrl ? (
                       <video
-                        src={ensureHttps(task.result_url) || ''}
+                        src={ensureHttps(videoUrl) || ''}
                         className="w-full h-full object-cover"
                         controls
                       />

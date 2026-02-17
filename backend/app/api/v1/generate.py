@@ -39,11 +39,11 @@ async def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depend
     token = credentials.credentials
 
     try:
-        # Supabase JWT 使用 RS256 算法，不验证签名（因为我们没有公钥）
-        # 在生产环境中应该使用 Supabase 的公钥验证
+        # Verify JWT signature with secret key
         payload = jwt.decode(
             token,
-            options={"verify_signature": False}  # 暂时跳过签名验证
+            settings.JWT_SECRET,
+            algorithms=[settings.JWT_ALGORITHM]
         )
 
         user_id = payload.get("sub")

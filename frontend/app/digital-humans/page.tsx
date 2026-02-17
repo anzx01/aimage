@@ -7,13 +7,15 @@ import { useAuthStore } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
 import Header from '@/components/Header';
 import Modal from '@/components/Modal';
+import FileUpload from '@/components/FileUpload';
 
 interface DigitalHuman {
   id: string;
   name: string;
-  description: string;
   avatar_url: string;
-  voice_type: string;
+  digital_human_type: string;
+  voice_config: any;
+  appearance_config: any;
   created_at: string;
 }
 
@@ -23,11 +25,19 @@ export default function DigitalHumansPage() {
   const [digitalHumans, setDigitalHumans] = useState<DigitalHuman[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [selectedDigitalHuman, setSelectedDigitalHuman] = useState<DigitalHuman | null>(null);
+  const [uploadedAvatar, setUploadedAvatar] = useState<string>('');
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
     voice_type: 'female',
   });
+  const [generateData, setGenerateData] = useState({
+    text: '',
+    duration: 10,
+  });
+  const [error, setError] = useState('');
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -48,28 +58,27 @@ export default function DigitalHumansPage() {
   const fetchDigitalHumans = async () => {
     setLoading(true);
     try {
-      // 使用模拟数据
-      const mockData: DigitalHuman[] = [
-        {
-          id: '1',
-          name: '小美',
-          description: '专业的产品讲解数字人，声音甜美',
-          avatar_url: 'https://picsum.photos/id/64/200/200',
-          voice_type: 'female',
-          created_at: new Date().toISOString(),
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('请先登录');
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/v1/digital-humans`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
         },
-        {
-          id: '2',
-          name: '小明',
-          description: '商务风格数字人，声音沉稳',
-          avatar_url: 'https://picsum.photos/id/65/200/200',
-          voice_type: 'male',
-          created_at: new Date().toISOString(),
-        },
-      ];
-      setDigitalHumans(mockData);
-    } catch (error) {
+      });
+
+      if (!response.ok) {
+        throw new Error('获取数字人列表失败');
+      }
+
+      const data = await response.json();
+      setDigitalHumans(data);
+    } catch (error: any) {
       console.error('Error fetching digital humans:', error);
+      setError(error.message || '获取数字人列表失败');
     } finally {
       setLoading(false);
     }
@@ -77,27 +86,145 @@ export default function DigitalHumansPage() {
 
   const handleAddDigitalHuman = async () => {
     if (!formData.name.trim()) {
-      alert('请输入数字人名称');
+      setError('请输入数字人名称');
+      return;
+    }
+
+    if (!uploadedAvatar) {
+      setError('请上传数字人头像');
       return;
     }
 
     try {
-      // 这里应该调用API创建数字人
-      const newDigitalHuman: DigitalHuman = {
-        id: Date.now().toString(),
-        name: formData.name,
-        description: formData.description,
-        avatar_url: 'https://picsum.photos/id/66/200/200',
-        voice_type: formData.voice_type,
-        created_at: new Date().toISOString(),
-      };
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('请先登录');
+      }
 
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/v1/digital-humans`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          avatar_url: uploadedAvatar,
+          digital_human_type: 'advanced',
+          voice_config: {
+            voice_type: formData.voice_type
+          },
+          appearance_config: {}
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || '创建数字人失败');
+      }
+
+      const newDigitalHuman = await response.json();
       setDigitalHumans([newDigitalHuman, ...digitalHumans]);
       setShowAddModal(false);
-      setFormData({ name: '', description: '', voice_type: 'female' });
-    } catch (error) {
+      setFormData({ name: '', voice_type: 'female' });
+      setUploadedAvatar('');
+      setError('');
+    } catch (error: any) {
       console.error('Error adding digital human:', error);
-      alert('添加失败，请重试');
+      setError(error.message || '添加失败，请重试');
+    }
+  };
+
+  const handleDeleteDigitalHuman = async (id: string) => {
+    if (!confirm('确定要删除这个数字人吗？')) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('请先登录');
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/v1/digital-humans/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('删除数字人失败');
+      }
+
+      setDigitalHumans(digitalHumans.filter(dh => dh.id !== id));
+    } catch (error: any) {
+      console.error('Error deleting digital human:', error);
+      alert(error.message || '删除失败，请重试');
+    }
+  };
+
+  const handleFileUpload = (url: string) => {
+    setUploadedAvatar(url);
+  };
+
+  const handleFileUploadError = (error: string) => {
+    setError(error);
+  };
+
+  const handleGenerateVideo = async () => {
+    if (!selectedDigitalHuman) return;
+
+    if (!generateData.text.trim()) {
+      setError('请输入要说的内容');
+      return;
+    }
+
+    setGenerating(true);
+    setError('');
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('请先登录');
+      }
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/api/v1/digital-humans/${selectedDigitalHuman.id}/generate-video`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          text: generateData.text,
+          duration: generateData.duration,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || '生成视频失败');
+      }
+
+      const result = await response.json();
+
+      // 关闭对话框并重置
+      setShowGenerateModal(false);
+      setGenerateData({ text: '', duration: 10 });
+      setSelectedDigitalHuman(null);
+
+      // 更新用户积分
+      await checkAuth();
+
+      // 提示用户并跳转到项目列表
+      alert('视频生成已开始，请在"我的项目"中查看进度');
+      router.push('/projects');
+    } catch (error: any) {
+      console.error('Error generating video:', error);
+      setError(error.message || '生成视频失败，请重试');
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -131,7 +258,7 @@ export default function DigitalHumansPage() {
 
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-6 py-3 bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] text-white font-bold rounded-full hover:scale-105 transition-all duration-300 shadow-lg shadow-[#8B5CF6]/50"
+              className="px-6 py-3 bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] text-white font-bold rounded-full hover:scale-105 transition-all duration-300 shadow-lg shadow-[#8B5CF6]/50 relative z-10 cursor-pointer"
               style={{ fontFamily: 'Space Grotesk, sans-serif' }}
             >
               + 添加数字人
@@ -159,8 +286,14 @@ export default function DigitalHumansPage() {
               {digitalHumans.map((dh) => (
                 <div
                   key={dh.id}
-                  className="bg-[#151520] border border-[#2A2A3A] rounded-2xl p-6 hover:border-[#8B5CF6] transition-all duration-300 cursor-pointer group"
+                  className="bg-[#151520] border border-[#2A2A3A] rounded-2xl p-6 hover:border-[#8B5CF6] transition-all duration-300 group relative"
                 >
+                  <button
+                    onClick={() => handleDeleteDigitalHuman(dh.id)}
+                    className="absolute top-4 right-4 w-8 h-8 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ×
+                  </button>
                   <div className="flex flex-col items-center">
                     <div className="w-32 h-32 rounded-full overflow-hidden mb-4 border-4 border-[#2A2A3A] group-hover:border-[#8B5CF6] transition-colors">
                       <img
@@ -175,18 +308,22 @@ export default function DigitalHumansPage() {
                     >
                       {dh.name}
                     </h3>
-                    <p
-                      className="text-sm text-[#A0A0B0] text-center mb-4"
-                      style={{ fontFamily: 'Inter, sans-serif' }}
-                    >
-                      {dh.description}
-                    </p>
                     <span
-                      className="px-3 py-1 bg-[#8B5CF6]/20 text-[#8B5CF6] text-xs rounded-full"
+                      className="px-3 py-1 bg-[#8B5CF6]/20 text-[#8B5CF6] text-xs rounded-full mb-4"
                       style={{ fontFamily: 'Space Grotesk, sans-serif' }}
                     >
-                      {dh.voice_type === 'female' ? '女声' : '男声'}
+                      {dh.voice_config?.voice_type === 'female' ? '女声' : '男声'}
                     </span>
+                    <button
+                      onClick={() => {
+                        setSelectedDigitalHuman(dh);
+                        setShowGenerateModal(true);
+                      }}
+                      className="w-full px-4 py-2 bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] text-white text-sm font-bold rounded-lg hover:scale-105 transition-all duration-300"
+                      style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+                    >
+                      生成视频
+                    </button>
                   </div>
                 </div>
               ))}
@@ -198,17 +335,27 @@ export default function DigitalHumansPage() {
       {/* Add Digital Human Modal */}
       <Modal
         isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
+        onClose={() => {
+          setShowAddModal(false);
+          setError('');
+          setUploadedAvatar('');
+        }}
         title="添加数字人"
         size="md"
       >
         <div className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
           <div>
             <label
               className="block text-sm font-medium text-white mb-2"
               style={{ fontFamily: 'Space Grotesk, sans-serif' }}
             >
-              名称
+              名称 *
             </label>
             <input
               type="text"
@@ -225,15 +372,13 @@ export default function DigitalHumansPage() {
               className="block text-sm font-medium text-white mb-2"
               style={{ fontFamily: 'Space Grotesk, sans-serif' }}
             >
-              描述
+              头像 *
             </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-3 bg-[#0A0A0F] border border-[#2A2A3A] rounded-lg text-white focus:outline-none focus:border-[#8B5CF6] transition-colors resize-none"
-              placeholder="输入数字人描述"
-              rows={3}
-              style={{ fontFamily: 'Inter, sans-serif' }}
+            <FileUpload
+              type="image"
+              maxSize={10}
+              onUploadComplete={handleFileUpload}
+              onUploadError={handleFileUploadError}
             />
           </div>
 
@@ -242,7 +387,7 @@ export default function DigitalHumansPage() {
               className="block text-sm font-medium text-white mb-2"
               style={{ fontFamily: 'Space Grotesk, sans-serif' }}
             >
-              声音类型
+              声音类型 *
             </label>
             <select
               value={formData.voice_type}
@@ -257,7 +402,11 @@ export default function DigitalHumansPage() {
 
           <div className="flex gap-3 pt-4">
             <button
-              onClick={() => setShowAddModal(false)}
+              onClick={() => {
+                setShowAddModal(false);
+                setError('');
+                setUploadedAvatar('');
+              }}
               className="flex-1 px-6 py-3 bg-[#2A2A3A] text-white font-medium rounded-lg hover:bg-[#3A3A4A] transition-colors"
               style={{ fontFamily: 'Space Grotesk, sans-serif' }}
             >
@@ -269,6 +418,97 @@ export default function DigitalHumansPage() {
               style={{ fontFamily: 'Space Grotesk, sans-serif' }}
             >
               添加
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Generate Video Modal */}
+      <Modal
+        isOpen={showGenerateModal}
+        onClose={() => {
+          setShowGenerateModal(false);
+          setSelectedDigitalHuman(null);
+          setGenerateData({ text: '', duration: 10 });
+          setError('');
+        }}
+        title={`让 ${selectedDigitalHuman?.name} 说话`}
+        size="md"
+      >
+        <div className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label
+              className="block text-sm font-medium text-white mb-2"
+              style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+            >
+              说话内容 *
+            </label>
+            <textarea
+              value={generateData.text}
+              onChange={(e) => setGenerateData({ ...generateData, text: e.target.value })}
+              className="w-full px-4 py-3 bg-[#0A0A0F] border border-[#2A2A3A] rounded-lg text-white focus:outline-none focus:border-[#8B5CF6] transition-colors resize-none"
+              placeholder="输入数字人要说的内容..."
+              rows={5}
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            />
+            <p className="mt-2 text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              {generateData.text.length} / 1000 字符
+            </p>
+          </div>
+
+          <div>
+            <label
+              className="block text-sm font-medium text-white mb-2"
+              style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+            >
+              视频时长
+            </label>
+            <select
+              value={generateData.duration}
+              onChange={(e) => setGenerateData({ ...generateData, duration: parseInt(e.target.value) })}
+              className="w-full px-4 py-3 bg-[#0A0A0F] border border-[#2A2A3A] rounded-lg text-white focus:outline-none focus:border-[#8B5CF6] transition-colors"
+              style={{ fontFamily: 'Inter, sans-serif' }}
+            >
+              <option value={10}>10秒</option>
+              <option value={15}>15秒</option>
+              <option value={20}>20秒</option>
+              <option value={30}>30秒</option>
+            </select>
+          </div>
+
+          <div className="p-3 bg-[#8B5CF6]/10 border border-[#8B5CF6]/30 rounded-lg">
+            <p className="text-sm text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              消耗积分: <span className="text-[#8B5CF6] font-bold">10</span>
+            </p>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button
+              onClick={() => {
+                setShowGenerateModal(false);
+                setSelectedDigitalHuman(null);
+                setGenerateData({ text: '', duration: 10 });
+                setError('');
+              }}
+              className="flex-1 px-6 py-3 bg-[#2A2A3A] text-white font-medium rounded-lg hover:bg-[#3A3A4A] transition-colors"
+              style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+              disabled={generating}
+            >
+              取消
+            </button>
+            <button
+              onClick={handleGenerateVideo}
+              disabled={generating}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-[#8B5CF6] to-[#EC4899] text-white font-bold rounded-lg hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ fontFamily: 'Space Grotesk, sans-serif' }}
+            >
+              {generating ? '生成中...' : '开始生成'}
             </button>
           </div>
         </div>

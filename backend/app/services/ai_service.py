@@ -3,8 +3,12 @@ AI Service for video and image generation using Alibaba Cloud DashScope.
 """
 import httpx
 import asyncio
+import logging
 from typing import Optional, Dict, Any
 from app.core.config import settings
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 
 class DashScopeService:
@@ -127,7 +131,7 @@ class DashScopeService:
         poll_interval: int = 5
     ) -> Dict[str, Any]:
         """
-        Wait for task completion with polling.
+        Wait for task completion with polling and retry mechanism.
 
         Args:
             task_id: The task ID to wait for
@@ -138,20 +142,110 @@ class DashScopeService:
             Dict containing final task result
         """
         elapsed_time = 0
+        max_retries = 3
 
         while elapsed_time < max_wait_time:
-            result = await self.get_task_status(task_id)
-            status = result.get("output", {}).get("task_status")
+            retry_count = 0
+            last_error = None
 
-            if status == "SUCCEEDED":
-                return result
-            elif status == "FAILED":
-                raise Exception(f"Task failed: {result.get('output', {}).get('message')}")
+            # Retry mechanism for network errors
+            while retry_count < max_retries:
+                try:
+                    result = await self.get_task_status(task_id)
+                    status = result.get("output", {}).get("task_status")
+
+                    if status == "SUCCEEDED":
+                        return result
+                    elif status == "FAILED":
+                        error_msg = result.get('output', {}).get('message', 'Unknown error')
+                        raise Exception(f"Task failed: {error_msg}")
+
+                    # Successfully got status, break retry loop
+                    break
+
+                except httpx.HTTPError as e:
+                    retry_count += 1
+                    last_error = e
+                    if retry_count < max_retries:
+                        await asyncio.sleep(2)  # Wait 2 seconds before retry
+                    else:
+                        raise Exception(f"Failed to get task status after {max_retries} retries: {str(e)}")
 
             await asyncio.sleep(poll_interval)
             elapsed_time += poll_interval
 
         raise TimeoutError(f"Task {task_id} did not complete within {max_wait_time} seconds")
+
+    async def generate_digital_human_video(
+        self,
+        avatar_url: str,
+        text: str,
+        voice_type: str = "female",
+        duration: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """
+        Generate digital human video with speech.
+
+        Args:
+            avatar_url: URL of the digital human avatar image
+            text: Text content for the digital human to speak
+            voice_type: Voice type (male/female)
+            duration: Optional video duration in seconds
+
+        Returns:
+            Dict containing task_id and status
+        """
+        # Try multiple possible API endpoints
+        endpoints = [
+            f"{self.base_url}/api/v1/services/aigc/digital-human/video-synthesis",
+            f"{self.base_url}/services/aigc/digital-human/video-synthesis",
+            f"{self.base_url}/api/v1/services/aigc/video-generation/digital-human"
+        ]
+
+        payload = {
+            "model": "digital-human-v1",
+            "input": {
+                "avatar_url": avatar_url,
+                "text": text,
+                "voice_type": voice_type
+            }
+        }
+
+        if duration:
+            payload["input"]["duration"] = duration
+
+        last_error = None
+
+        for url in endpoints:
+            try:
+                logger.info(f"Attempting digital human video generation with endpoint: {url}")
+                logger.debug(f"Payload: {payload}")
+
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        url,
+                        json=payload,
+                        headers={**self.headers, "X-DashScope-Async": "enable"},
+                        timeout=30.0
+                    )
+                    response.raise_for_status()
+                    result = response.json()
+                    logger.info(f"Successfully initiated digital human video generation. Task ID: {result.get('output', {}).get('task_id')}")
+                    return result
+
+            except httpx.HTTPStatusError as e:
+                logger.warning(f"Endpoint {url} failed with status {e.response.status_code}: {e.response.text}")
+                last_error = e
+                continue
+            except Exception as e:
+                logger.warning(f"Endpoint {url} failed with error: {str(e)}")
+                last_error = e
+                continue
+
+        # If all endpoints failed, raise the last error
+        error_msg = f"All API endpoints failed. Last error: {str(last_error)}"
+        logger.error(error_msg)
+        raise Exception(error_msg)
 
 
 class DeepSeekService:
