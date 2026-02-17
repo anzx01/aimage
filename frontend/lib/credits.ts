@@ -41,18 +41,29 @@ export async function deductCredits(
     }
 
     // 创建交易记录
-    const { error: transactionError } = await supabase
+    const { data: transactionData, error: transactionError } = await supabase
       .from('credit_transactions')
       .insert({
         user_id: userId,
         amount: -amount,
-        type: 'deduct',
+        transaction_type: 'deduct',
         description,
         related_project_id: projectId,
-      });
+        balance_after: newCredits, // 添加交易后的余额
+      })
+      .select();
 
     if (transactionError) {
       console.error('创建交易记录失败:', transactionError);
+      console.error('错误代码:', transactionError.code);
+      console.error('错误消息:', transactionError.message);
+      console.error('错误详情:', transactionError.details);
+      console.error('错误提示:', transactionError.hint);
+      console.error('完整错误:', JSON.stringify(transactionError, null, 2));
+      // 即使交易记录创建失败，积分已经扣除，仍然返回成功
+      // 这样不会阻止视频生成流程
+    } else {
+      console.log('✅ 交易记录创建成功:', transactionData);
     }
 
     return { success: true, newBalance: newCredits };
@@ -102,13 +113,16 @@ export async function refundCredits(
       .insert({
         user_id: userId,
         amount: amount,
-        type: 'refund',
+        transaction_type: 'refund',
         description,
         related_project_id: projectId,
+        balance_after: newCredits, // 添加交易后的余额
       });
 
     if (transactionError) {
       console.error('创建交易记录失败:', transactionError);
+      console.error('错误详情:', JSON.stringify(transactionError, null, 2));
+      // 即使交易记录创建失败，积分已经退还，仍然返回成功
     }
 
     return { success: true, newBalance: newCredits };

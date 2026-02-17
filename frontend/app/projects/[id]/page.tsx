@@ -63,9 +63,32 @@ export default function ProjectDetailPage() {
     }
   }, [user, projectId]);
 
+  // 轮询检查任务状态
+  useEffect(() => {
+    if (!project || !tasks.length) return;
+
+    // 检查是否有正在处理的任务
+    const hasProcessingTask = tasks.some(task =>
+      task.status === 'pending' || task.status === 'processing'
+    );
+
+    if (!hasProcessingTask) return;
+
+    // 每5秒刷新一次数据
+    const intervalId = setInterval(() => {
+      console.log('轮询检查任务状态...');
+      loadProjectData();
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [project, tasks]);
+
   const loadProjectData = async () => {
     try {
-      setLoading(true);
+      // 只在首次加载时显示 loading 状态，轮询时不显示
+      if (!project) {
+        setLoading(true);
+      }
 
       // 加载项目信息
       const { data: projectData, error: projectError } = await supabase
