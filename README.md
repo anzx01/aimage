@@ -1,8 +1,6 @@
 # AIMAGE - AI视频生成平台
 
-<div align="center">
 
-![1771251713958](image/README/1771251713958.png)
 
 **一键生成专业级产品视频的AI平台**
 
@@ -11,7 +9,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38bdf8)](https://tailwindcss.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-Latest-3ecf8e)](https://supabase.com/)
 
-</div>
+![1771322474270](image/README/1771322474270.png)`</div>`
 
 ## 📖 项目简介
 

@@ -163,10 +163,10 @@ class ShowcaseCaseResponse(BaseModel):
 # Digital Human Schemas
 class DigitalHumanCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
+    avatar_url: Optional[str] = None
     digital_human_type: str = Field(..., pattern="^(advanced|sora2)$")
     voice_config: dict = Field(default_factory=dict)
     appearance_config: dict = Field(default_factory=dict)
-    is_public: bool = False
 
 
 class DigitalHumanResponse(BaseModel):
@@ -175,6 +175,8 @@ class DigitalHumanResponse(BaseModel):
     name: str
     avatar_url: Optional[str] = None
     digital_human_type: str
+    voice_config: Optional[dict] = None
+    appearance_config: Optional[dict] = None
     is_public: bool
     created_at: datetime
 
