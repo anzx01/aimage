@@ -41,6 +41,37 @@ export default function FileUpload({
     return 'image/*,video/*';
   };
 
+  // 验证图片尺寸
+  const validateImageDimensions = (file: File): Promise<string | null> => {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) {
+        resolve(null);
+        return;
+      }
+
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        const { width, height } = img;
+
+        if (width < 240 || width > 8000 || height < 240 || height > 8000) {
+          resolve(`图片尺寸必须在 240-8000 像素之间（当前: ${width}x${height}）`);
+        } else {
+          resolve(null);
+        }
+      };
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve('无法读取图片尺寸');
+      };
+
+      img.src = objectUrl;
+    });
+  };
+
   // 验证文件
   const validateFile = (file: File): string | null => {
     const fileSizeMB = file.size / 1024 / 1024;
@@ -120,19 +151,28 @@ export default function FileUpload({
   };
 
   // 处理文件选择
-  const handleFiles = useCallback((selectedFiles: FileList | null) => {
+  const handleFiles = useCallback(async (selectedFiles: FileList | null) => {
     if (!selectedFiles || selectedFiles.length === 0) return;
 
     const newFiles: UploadedFile[] = [];
 
-    Array.from(selectedFiles).forEach((file) => {
+    for (const file of Array.from(selectedFiles)) {
       const error = validateFile(file);
 
       if (error) {
         if (onUploadError) {
           onUploadError(error);
         }
-        return;
+        continue;
+      }
+
+      // 验证图片尺寸
+      const dimensionError = await validateImageDimensions(file);
+      if (dimensionError) {
+        if (onUploadError) {
+          onUploadError(dimensionError);
+        }
+        continue;
       }
 
       // 创建预览
@@ -144,7 +184,7 @@ export default function FileUpload({
         progress: 0,
         status: 'uploading',
       });
-    });
+    }
 
     if (newFiles.length > 0) {
       setFiles(prev => [...prev, ...newFiles]);
@@ -243,6 +283,11 @@ export default function FileUpload({
               {type === 'both' && '支持图片和视频文件'}
               {' '}· 最大 {maxSize}MB
             </p>
+            {(type === 'image' || type === 'both') && (
+              <p className="text-xs text-[#8B5CF6] mt-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                图片尺寸要求: 240-8000 像素
+              </p>
+            )}
           </div>
         </div>
       </div>

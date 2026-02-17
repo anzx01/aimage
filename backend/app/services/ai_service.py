@@ -81,7 +81,7 @@ class DashScopeService:
         payload = {
             "model": "wan2.6-i2v",
             "input": {
-                "image_url": image_url,
+                "img_url": image_url,
                 "duration": duration
             }
         }

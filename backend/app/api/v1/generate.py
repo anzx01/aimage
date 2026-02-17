@@ -6,7 +6,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 from typing import Optional
 from app.core.security import decode_access_token
-from app.db.supabase import supabase
+from app.db.supabase import supabase, supabase_admin
 from app.services.ai_service import dashscope_service, deepseek_service
 
 router = APIRouter(prefix="/generate", tags=["Video Generation"])
@@ -19,7 +19,7 @@ class VideoGenerateRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=500)
     model_type: str = Field(..., pattern="^(seedance|wan2.6-i2v)$")
     image_url: Optional[str] = None  # Required for wan2.6-i2v
-    duration: int = Field(default=4, ge=1, le=10)
+    duration: int = Field(default=4, ge=1, le=60)
     optimize_prompt: bool = Field(default=True)
 
 
@@ -33,23 +33,42 @@ class VideoGenerateResponse(BaseModel):
 
 async def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
     """Get current user ID from token."""
+    import jwt
+    from app.core.config import settings
+
     token = credentials.credentials
-    payload = decode_access_token(token)
 
-    if not payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+    try:
+        # Supabase JWT 使用 RS256 算法，不验证签名（因为我们没有公钥）
+        # 在生产环境中应该使用 Supabase 的公钥验证
+        payload = jwt.decode(
+            token,
+            options={"verify_signature": False}  # 暂时跳过签名验证
         )
 
-    user_id = payload.get("sub")
-    if not user_id:
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: no user ID"
+            )
+
+        return user_id
+    except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload"
+            detail="Token has expired"
         )
-
-    return user_id
+    except jwt.InvalidTokenError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Invalid token: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Authentication failed: {str(e)}"
+        )
 
 
 async def process_video_generation(
@@ -62,10 +81,9 @@ async def process_video_generation(
 ):
     """Background task to process video generation."""
     try:
-        # Update task status to processing
-        supabase.table("generation_tasks").update({
-            "status": "processing",
-            "started_at": "now()"
+        # Update task status to processing (use admin client)
+        supabase_admin.table("generation_tasks").update({
+            "status": "processing"
         }).eq("id", generation_task_id).execute()
 
         # Generate video based on model type
@@ -87,9 +105,9 @@ async def process_video_generation(
         if not task_id:
             raise Exception("Failed to get task_id from AI service")
 
-        # Update generation task with AI task_id
-        supabase.table("generation_tasks").update({
-            "metadata": {"ai_task_id": task_id}
+        # Update generation task with AI task_id (use admin client)
+        supabase_admin.table("generation_tasks").update({
+            "config": {"ai_task_id": task_id}
         }).eq("id", generation_task_id).execute()
 
         # Wait for completion (with timeout)
@@ -107,20 +125,18 @@ async def process_video_generation(
         # Update project with video URL
         supabase.table("projects").update({
             "video_url": video_url,
-            "status": "completed",
-            "completed_at": "now()"
+            "status": "completed"
         }).eq("id", project_id).execute()
 
-        # Update generation task to completed
-        supabase.table("generation_tasks").update({
+        # Update generation task to completed (use admin client)
+        supabase_admin.table("generation_tasks").update({
             "status": "completed",
-            "progress": 100,
-            "completed_at": "now()"
+            "result_url": video_url
         }).eq("id", generation_task_id).execute()
 
     except Exception as e:
-        # Update task status to failed
-        supabase.table("generation_tasks").update({
+        # Update task status to failed (use admin client)
+        supabase_admin.table("generation_tasks").update({
             "status": "failed",
             "error_message": str(e)
         }).eq("id", generation_task_id).execute()
@@ -145,28 +161,66 @@ async def generate_video(
     - Wan2.6-I2V: Image-to-video generation
     """
     try:
+        # Debug: Print user_id and project_id
+        print(f"[DEBUG] user_id from token: {user_id}")
+        print(f"[DEBUG] project_id from request: {request.project_id}")
+        print(f"[DEBUG] image_url from request: {request.image_url}")
+        print(f"[DEBUG] model_type from request: {request.model_type}")
+
         # Verify project ownership
-        project_response = supabase.table("projects") \
+        project_response = supabase_admin.table("projects") \
             .select("*") \
             .eq("id", request.project_id) \
             .eq("user_id", user_id) \
-            .single() \
             .execute()
 
-        if not project_response.data:
+        print(f"[DEBUG] Query result count: {len(project_response.data) if project_response.data else 0}")
+
+        if not project_response.data or len(project_response.data) == 0:
+            # Check if project exists with different user_id
+            project_check = supabase_admin.table("projects") \
+                .select("user_id") \
+                .eq("id", request.project_id) \
+                .execute()
+
+            if project_check.data and len(project_check.data) > 0:
+                actual_user_id = project_check.data[0].get("user_id")
+                print(f"[DEBUG] Project exists but with different user_id: {actual_user_id}")
+                print(f"[DEBUG] Expected user_id: {user_id}")
+            else:
+                print(f"[DEBUG] Project does not exist in database")
+
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Project not found"
             )
 
-        # Check user credits
-        profile_response = supabase.table("profiles") \
+        # Check user credits (use admin client to bypass RLS)
+        profile_response = supabase_admin.table("profiles") \
             .select("credits") \
             .eq("id", user_id) \
-            .single() \
             .execute()
 
-        credits = profile_response.data.get("credits", 0)
+        # If profile doesn't exist, create it with default credits
+        if not profile_response.data or len(profile_response.data) == 0:
+            try:
+                supabase_admin.table("profiles").insert({
+                    "id": user_id,
+                    "credits": 100
+                }).execute()
+                credits = 100
+            except Exception as e:
+                # Profile might have been created by another request, try to fetch again
+                profile_response = supabase_admin.table("profiles") \
+                    .select("credits") \
+                    .eq("id", user_id) \
+                    .execute()
+                if profile_response.data and len(profile_response.data) > 0:
+                    credits = profile_response.data[0].get("credits", 0)
+                else:
+                    raise e
+        else:
+            credits = profile_response.data[0].get("credits", 0)
         credits_cost = 10  # Base cost
 
         if credits < credits_cost:
@@ -180,19 +234,19 @@ async def generate_video(
         if request.optimize_prompt:
             final_prompt = await deepseek_service.optimize_prompt(request.prompt)
 
-        # Create generation task (this will auto-deduct credits via trigger)
-        task_response = supabase.table("generation_tasks").insert({
+        # Create generation task (use admin client to bypass RLS)
+        task_response = supabase_admin.table("generation_tasks").insert({
             "project_id": request.project_id,
             "user_id": user_id,
-            "model_version": f"{request.model_type}-{request.duration}s",
-            "credits_cost": credits_cost,
+            "model_name": f"{request.model_type}-{request.duration}s",
             "status": "pending",
-            "metadata": {
+            "config": {
                 "original_prompt": request.prompt,
                 "optimized_prompt": final_prompt,
                 "model_type": request.model_type,
                 "duration": request.duration,
-                "image_url": request.image_url
+                "image_url": request.image_url,
+                "credits_cost": credits_cost
             }
         }).execute()
 

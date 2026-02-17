@@ -20,7 +20,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
+
+# Debug: Print CORS origins on startup
+print(f"[CONFIG] CORS Origins configured: {settings.CORS_ORIGINS}")
 
 # Include routers
 app.include_router(auth.router, prefix="/api/v1")
