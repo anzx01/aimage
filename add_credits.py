@@ -3,10 +3,18 @@ Add test credits to user account
 """
 import os
 from supabase import create_client
+from dotenv import load_dotenv
 
-# Supabase credentials
-SUPABASE_URL = "https://neobund1.supabase.co"
-SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5lb2J1bmQxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczOTQ0NTU0NywiZXhwIjoyMDU1MDIxNTQ3fQ.Aq_CtLxWXVqJXqPqQxqQqQqQqQqQqQqQqQqQqQqQqQqQ"
+# Load environment variables
+load_dotenv('backend/.env')
+
+# Get Supabase credentials from environment variables
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_SERVICE_KEY:
+    print("Error: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in backend/.env")
+    exit(1)
 
 supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 

@@ -180,6 +180,12 @@ export default function DigitalHumansPage() {
       return;
     }
 
+    // 暂时禁用功能
+    setError('数字人视频生成功能开发中，敬请期待！');
+    return;
+
+    /*
+    // 功能开发中 - 等待API配置完成后启用
     setGenerating(true);
     setError('');
 
@@ -226,6 +232,7 @@ export default function DigitalHumansPage() {
     } finally {
       setGenerating(false);
     }
+    */
   };
 
   if (authLoading || !user) {
