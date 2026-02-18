@@ -184,68 +184,71 @@ class DashScopeService:
         duration: Optional[int] = None
     ) -> Dict[str, Any]:
         """
-        Generate digital human video with speech.
+        Generate video from text using Alibaba Cloud Wanx text-to-video API.
+
+        Note: This is a simplified version using text-to-video.
+        For true digital human with avatar, you need Alibaba Cloud IMS service.
 
         Args:
-            avatar_url: URL of the digital human avatar image
-            text: Text content for the digital human to speak
-            voice_type: Voice type (male/female)
+            avatar_url: URL of the digital human avatar image (currently not used)
+            text: Text content to generate video from
+            voice_type: Voice type (male/female) - currently not used
             duration: Optional video duration in seconds
 
         Returns:
             Dict containing task_id and status
         """
-        # Try multiple possible API endpoints
-        endpoints = [
-            f"{self.base_url}/api/v1/services/aigc/digital-human/video-synthesis",
-            f"{self.base_url}/services/aigc/digital-human/video-synthesis",
-            f"{self.base_url}/api/v1/services/aigc/video-generation/digital-human"
-        ]
+        # Use Wanx text-to-video API
+        url = f"{self.base_url}/api/v1/services/aigc/text2video/wanx-text-to-video"
+
+        # Create a prompt that describes the video we want
+        prompt = f"A person speaking: {text}"
 
         payload = {
-            "model": "digital-human-v1",
+            "model": "wanx-v1",
             "input": {
-                "avatar_url": avatar_url,
-                "text": text,
-                "voice_type": voice_type
+                "prompt": prompt
+            },
+            "parameters": {
+                "style": "natural"
             }
         }
 
-        if duration:
-            payload["input"]["duration"] = duration
+        try:
+            logger.info(f"Attempting video generation with Wanx text-to-video API")
+            logger.info(f"Prompt: {prompt[:100]}...")
+            logger.debug(f"Full payload: {payload}")
 
-        last_error = None
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    url,
+                    json=payload,
+                    headers={**self.headers, "X-DashScope-Async": "enable"},
+                    timeout=30.0
+                )
 
-        for url in endpoints:
-            try:
-                logger.info(f"Attempting digital human video generation with endpoint: {url}")
-                logger.debug(f"Payload: {payload}")
+                # Log response for debugging
+                logger.info(f"Response status: {response.status_code}")
+                logger.debug(f"Response body: {response.text}")
 
-                async with httpx.AsyncClient() as client:
-                    response = await client.post(
-                        url,
-                        json=payload,
-                        headers={**self.headers, "X-DashScope-Async": "enable"},
-                        timeout=30.0
-                    )
-                    response.raise_for_status()
-                    result = response.json()
-                    logger.info(f"Successfully initiated digital human video generation. Task ID: {result.get('output', {}).get('task_id')}")
-                    return result
+                response.raise_for_status()
+                result = response.json()
 
-            except httpx.HTTPStatusError as e:
-                logger.warning(f"Endpoint {url} failed with status {e.response.status_code}: {e.response.text}")
-                last_error = e
-                continue
-            except Exception as e:
-                logger.warning(f"Endpoint {url} failed with error: {str(e)}")
-                last_error = e
-                continue
+                task_id = result.get('output', {}).get('task_id')
+                if task_id:
+                    logger.info(f"Successfully initiated video generation. Task ID: {task_id}")
+                else:
+                    logger.warning(f"No task_id in response: {result}")
 
-        # If all endpoints failed, raise the last error
-        error_msg = f"All API endpoints failed. Last error: {str(last_error)}"
-        logger.error(error_msg)
-        raise Exception(error_msg)
+                return result
+
+        except httpx.HTTPStatusError as e:
+            error_detail = e.response.text
+            logger.error(f"HTTP error {e.response.status_code}: {error_detail}")
+            raise Exception(f"DashScope API error ({e.response.status_code}): {error_detail}")
+        except Exception as e:
+            logger.error(f"Failed to generate video: {str(e)}", exc_info=True)
+            raise Exception(f"Failed to generate video: {str(e)}")
 
 
 class DeepSeekService:

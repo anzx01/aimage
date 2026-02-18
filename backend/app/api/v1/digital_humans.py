@@ -28,32 +28,18 @@ async def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depend
     token = credentials.credentials
 
     try:
-        # Verify JWT signature with secret key
-        payload = jwt.decode(
-            token,
-            settings.JWT_SECRET,
-            algorithms=[settings.JWT_ALGORITHM]
-        )
+        # Verify token using Supabase auth
+        response = supabase_admin.auth.get_user(token)
 
-        user_id = payload.get("sub")
-        if not user_id:
+        if not response or not response.user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token: no user ID"
+                detail="Invalid token: user not found"
             )
 
-        return user_id
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired"
-        )
-    except jwt.InvalidTokenError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid token: {str(e)}"
-        )
+        return response.user.id
     except Exception as e:
+        logger.error(f"Authentication error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Authentication failed: {str(e)}"

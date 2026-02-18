@@ -4,40 +4,44 @@ Projects API endpoints.
 from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import List
+import logging
 from app.schemas import ProjectCreate, ProjectUpdate, ProjectResponse
-from app.core.security import decode_access_token
-from app.db.supabase import supabase
+from app.db.supabase import supabase_admin
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 security = HTTPBearer()
 
 
 async def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
-    """Get current user ID from token."""
+    """Get current user ID from token using Supabase auth."""
     token = credentials.credentials
-    payload = decode_access_token(token)
 
-    if not payload:
+    try:
+        # Verify token using Supabase auth
+        response = supabase_admin.auth.get_user(token)
+
+        if not response or not response.user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token: user not found"
+            )
+
+        return response.user.id
+    except Exception as e:
+        logger.error(f"Authentication error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            detail=f"Authentication failed: {str(e)}"
         )
-
-    user_id = payload.get("sub")
-    if not user_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload"
-        )
-
-    return user_id
 
 
 @router.get("", response_model=List[ProjectResponse])
 async def get_projects(user_id: str = Depends(get_current_user_id)):
     """Get all projects for current user."""
     try:
-        response = supabase.table("projects") \
+        response = supabase_admin.table("projects") \
             .select("*") \
             .eq("user_id", user_id) \
             .order("created_at", desc=True) \
@@ -46,6 +50,7 @@ async def get_projects(user_id: str = Depends(get_current_user_id)):
         return [ProjectResponse(**project) for project in response.data]
 
     except Exception as e:
+        logger.error(f"Error fetching projects: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
@@ -59,7 +64,7 @@ async def create_project(
 ):
     """Create a new project."""
     try:
-        response = supabase.table("projects").insert({
+        response = supabase_admin.table("projects").insert({
             "user_id": user_id,
             "title": project_data.title,
             "description": project_data.description,
@@ -77,6 +82,7 @@ async def create_project(
         return ProjectResponse(**response.data[0])
 
     except Exception as e:
+        logger.error(f"Error creating project: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
@@ -90,7 +96,7 @@ async def get_project(
 ):
     """Get a specific project."""
     try:
-        response = supabase.table("projects") \
+        response = supabase_admin.table("projects") \
             .select("*") \
             .eq("id", project_id) \
             .eq("user_id", user_id) \
@@ -106,6 +112,7 @@ async def get_project(
         return ProjectResponse(**response.data)
 
     except Exception as e:
+        logger.error(f"Error fetching project: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Project not found"
@@ -137,7 +144,7 @@ async def update_project(
                 detail="No fields to update"
             )
 
-        response = supabase.table("projects") \
+        response = supabase_admin.table("projects") \
             .update(update_data) \
             .eq("id", project_id) \
             .eq("user_id", user_id) \
@@ -152,6 +159,7 @@ async def update_project(
         return ProjectResponse(**response.data[0])
 
     except Exception as e:
+        logger.error(f"Error updating project: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
@@ -165,7 +173,7 @@ async def delete_project(
 ):
     """Delete a project."""
     try:
-        response = supabase.table("projects") \
+        response = supabase_admin.table("projects") \
             .delete() \
             .eq("id", project_id) \
             .eq("user_id", user_id) \
@@ -180,6 +188,7 @@ async def delete_project(
         return None
 
     except Exception as e:
+        logger.error(f"Error deleting project: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
