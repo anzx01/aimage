@@ -437,6 +437,14 @@ uvicorn main:app --host 0.0.0.0 --port 8002
 
 本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
+## ⚖️ 合规与版权说明
+
+- 本仓库源码采用 MIT 许可证。运行项目所需的第三方依赖请通过 `pnpm install` / `pip install -r requirements.txt` 安装，不应将 `node_modules`、`__pycache__`、本地环境变量或个人工具配置提交到仓库。
+- 项目演示页面和种子数据中引用了 Unsplash、Picsum 等第三方图片服务，仅用于开发和演示占位。正式部署、商业宣传或二次分发前，请替换为自有素材或已获得明确授权的素材，并保留相应来源与许可记录。
+- AIMAGE 不会对用户通过平台生成的内容主张权利。生成内容的实际可用性取决于用户输入素材、提示词、第三方模型服务条款以及适用法律。使用者应确保上传素材、人物肖像、品牌元素、音乐、字体和最终输出均不侵犯他人权利。
+- TikTok、Instagram、YouTube、Shopify、Amazon、AliExpress、Sora、Veo、Kling、Runway、Luma、DeepSeek、DashScope 等名称和商标归各自权利人所有。本项目与上述品牌或平台不存在隶属、赞助、背书或官方合作关系，除非另有明确说明。
+- 如果将本项目用于线上服务，建议补充正式的隐私政策、服务条款、Cookie 政策、内容审核规则和第三方模型服务条款链接。
+
 ## 📞 联系方式
 
 - 项目主页: [https://github.com/yourusername/aimage](https://github.com/yourusername/aimage)

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 
 export default function LandingPage() {
-  // 使用免费商用图片
+  // Third-party demo images; replace with owned or licensed assets before production use.
   const showcaseItems = [
     {
       category: '珠宝配饰',
@@ -412,7 +412,7 @@ export default function LandingPage() {
               </div>
 
               <p className="text-sm text-[#E0E0E0] leading-relaxed" style={{ fontFamily: 'Inter, sans-serif' }}>
-                "{testimonial.content}"
+                &ldquo;{testimonial.content}&rdquo;
               </p>
 
               <div className="flex items-center gap-3 pt-4 border-t border-[#2A2A3A]">
@@ -521,9 +521,13 @@ export default function LandingPage() {
                 法律
               </h4>
               <div className="flex flex-col gap-3">
-                {['隐私政策', '服务条款', 'Cookie政策'].map((item) => (
-                  <Link key={item} href="#" className="text-sm text-[#A0A0B0] hover:text-[#8B5CF6] transition-colors duration-300" style={{ fontFamily: 'Inter, sans-serif' }}>
-                    {item}
+                {[
+                  { label: '隐私政策', href: '/privacy' },
+                  { label: '服务条款', href: '/terms' },
+                  { label: 'Cookie政策', href: '/cookies' },
+                ].map((item) => (
+                  <Link key={item.label} href={item.href} className="text-sm text-[#A0A0B0] hover:text-[#8B5CF6] transition-colors duration-300" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    {item.label}
                   </Link>
                 ))}
               </div>
@@ -533,7 +537,7 @@ export default function LandingPage() {
 
         <div className="flex justify-between items-center pt-8 border-t border-[#2A2A3A] max-w-[1200px] mx-auto w-full">
           <p className="text-sm text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
-            © 2024 NeoBund1. All rights reserved.
+            © 2026 AIMAGE Team. All rights reserved.
           </p>
           <div className="flex gap-6">
             {['Twitter', 'LinkedIn', 'GitHub'].map((social) => (
@@ -571,7 +575,7 @@ function FAQAccordion() {
     },
     {
       question: '生成的视频版权归谁？',
-      answer: '您生成的所有视频版权完全归您所有。您可以自由使用这些视频进行商业推广、社交媒体发布、广告投放等。我们不会对您的视频内容主张任何权利。但请注意，您需要确保输入的素材和内容不侵犯他人版权。'
+      answer: 'AIMAGE 不会对您通过平台生成的内容主张权利。实际使用权取决于您输入的素材、提示词、第三方模型服务条款以及适用法律。请确保上传素材、品牌元素、人物肖像和最终输出均已取得必要授权，并适合用于商业推广、社交媒体发布或广告投放。'
     },
     {
       question: '支持哪些视频格式和分辨率？',
