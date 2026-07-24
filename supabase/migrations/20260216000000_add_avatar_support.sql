@@ -1,5 +1,5 @@
--- 添加用户头像字段
-ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+-- 添加用户头像字段（用户信息存放在 profiles 表；profiles 已含 avatar_url，此处幂等兜底）
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 
 -- 创建 avatars storage bucket (如果不存在)
 INSERT INTO storage.buckets (id, name, public)
