@@ -2,48 +2,25 @@
 Digital humans API endpoints.
 """
 from fastapi import APIRouter, HTTPException, status, Depends, BackgroundTasks
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import List
 from pydantic import BaseModel, Field
-import jwt
 import logging
-from app.core.config import settings
 from app.db.supabase import supabase_admin
+from app.api.deps import get_current_user_id
 from app.schemas import DigitalHumanCreate, DigitalHumanResponse
 from app.services.ai_service import dashscope_service
+from app.services.credits_service import deduct_credits, refund_credits
 
 router = APIRouter(prefix="/digital-humans", tags=["Digital Humans"])
-security = HTTPBearer()
 logger = logging.getLogger(__name__)
+
+CREDITS_COST = 10
 
 
 class VideoGenerateRequest(BaseModel):
     """Request model for digital human video generation."""
     text: str = Field(..., min_length=1, max_length=1000)
     duration: int = Field(default=10, ge=5, le=60)
-
-
-async def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
-    """Get current user ID from token."""
-    token = credentials.credentials
-
-    try:
-        # Verify token using Supabase auth
-        response = supabase_admin.auth.get_user(token)
-
-        if not response or not response.user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token: user not found"
-            )
-
-        return response.user.id
-    except Exception as e:
-        logger.error(f"Authentication error: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication failed: {str(e)}"
-        )
 
 
 @router.post("", response_model=DigitalHumanResponse, status_code=status.HTTP_201_CREATED)
@@ -53,7 +30,6 @@ async def create_digital_human(
 ):
     """Create a new digital human."""
     try:
-        # Insert digital human into database
         response = supabase_admin.table("digital_humans").insert({
             "user_id": user_id,
             "name": digital_human.name,
@@ -88,14 +64,14 @@ async def list_digital_humans(
 ):
     """Get all digital humans for the current user."""
     try:
-        response = supabase_admin.table("digital_humans") \
-            .select("*") \
-            .eq("user_id", user_id) \
-            .order("created_at", desc=True) \
+        response = (
+            supabase_admin.table("digital_humans")
+            .select("*")
+            .eq("user_id", user_id)
+            .order("created_at", desc=True)
             .execute()
-
+        )
         return response.data or []
-
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -110,11 +86,13 @@ async def get_digital_human(
 ):
     """Get a specific digital human by ID."""
     try:
-        response = supabase_admin.table("digital_humans") \
-            .select("*") \
-            .eq("id", digital_human_id) \
-            .eq("user_id", user_id) \
+        response = (
+            supabase_admin.table("digital_humans")
+            .select("*")
+            .eq("id", digital_human_id)
+            .eq("user_id", user_id)
             .execute()
+        )
 
         if not response.data or len(response.data) == 0:
             raise HTTPException(
@@ -141,12 +119,13 @@ async def update_digital_human(
 ):
     """Update a digital human."""
     try:
-        # Verify ownership
-        check_response = supabase_admin.table("digital_humans") \
-            .select("id") \
-            .eq("id", digital_human_id) \
-            .eq("user_id", user_id) \
+        check_response = (
+            supabase_admin.table("digital_humans")
+            .select("id")
+            .eq("id", digital_human_id)
+            .eq("user_id", user_id)
             .execute()
+        )
 
         if not check_response.data or len(check_response.data) == 0:
             raise HTTPException(
@@ -154,7 +133,6 @@ async def update_digital_human(
                 detail="Digital human not found"
             )
 
-        # Update digital human
         response = supabase_admin.table("digital_humans").update({
             "name": digital_human.name,
             "avatar_url": digital_human.avatar_url,
@@ -187,12 +165,13 @@ async def delete_digital_human(
 ):
     """Delete a digital human."""
     try:
-        # Verify ownership
-        check_response = supabase_admin.table("digital_humans") \
-            .select("id") \
-            .eq("id", digital_human_id) \
-            .eq("user_id", user_id) \
+        check_response = (
+            supabase_admin.table("digital_humans")
+            .select("id")
+            .eq("id", digital_human_id)
+            .eq("user_id", user_id)
             .execute()
+        )
 
         if not check_response.data or len(check_response.data) == 0:
             raise HTTPException(
@@ -200,7 +179,6 @@ async def delete_digital_human(
                 detail="Digital human not found"
             )
 
-        # Delete digital human
         supabase_admin.table("digital_humans") \
             .delete() \
             .eq("id", digital_human_id) \
@@ -224,16 +202,16 @@ async def process_digital_human_video(
     duration: int
 ):
     """Background task to process digital human video generation."""
-    credits_cost = 10
     try:
         logger.info(f"Starting digital human video generation for user {user_id}")
 
-        # Get digital human info
-        dh_response = supabase_admin.table("digital_humans") \
-            .select("*") \
-            .eq("id", digital_human_id) \
-            .eq("user_id", user_id) \
+        dh_response = (
+            supabase_admin.table("digital_humans")
+            .select("*")
+            .eq("id", digital_human_id)
+            .eq("user_id", user_id)
             .execute()
+        )
 
         if not dh_response.data or len(dh_response.data) == 0:
             raise Exception("Digital human not found")
@@ -243,9 +221,6 @@ async def process_digital_human_video(
         voice_config = digital_human.get("voice_config", {})
         voice_type = voice_config.get("voice_type", "female")
 
-        logger.info(f"Digital human found: {digital_human.get('name')}, avatar_url: {avatar_url}")
-
-        # Use digital human API to generate video with speech
         result = await dashscope_service.generate_digital_human_video(
             avatar_url=avatar_url,
             text=text,
@@ -253,79 +228,47 @@ async def process_digital_human_video(
             duration=duration
         )
 
-        logger.debug(f"API result: {result}")
-
         task_id = result.get("output", {}).get("task_id")
         if not task_id:
             raise Exception("Failed to get task_id from AI service")
 
-        logger.info(f"Got task_id: {task_id}, waiting for completion...")
-
-        # Wait for completion
         final_result = await dashscope_service.wait_for_task_completion(
             task_id=task_id,
             max_wait_time=300,
             poll_interval=5
         )
 
-        logger.info(f"Task completed successfully")
-
-        # Extract video URL
         video_url = final_result.get("output", {}).get("video_url")
         if not video_url:
             raise Exception("No video URL in result")
 
-        logger.info(f"Got video_url: {video_url}")
-
-        # Create a project record for this video
+        # Create project record (no "mode" column -- use project_type only)
         project_response = supabase_admin.table("projects").insert({
             "user_id": user_id,
             "title": f"{digital_human.get('name')} - {text[:30]}...",
             "description": text,
-            "mode": "digital_human",
             "project_type": "digital_human",
             "status": "completed",
             "video_url": video_url,
-            "credits_used": credits_cost
+            "credits_used": CREDITS_COST
         }).execute()
-
-        logger.info(f"Project created successfully: {project_response.data[0]['id'] if project_response.data else 'unknown'}")
 
         return project_response.data[0] if project_response.data else None
 
     except Exception as e:
         logger.error(f"Error processing digital human video: {str(e)}", exc_info=True)
 
-        # Refund credits on failure
+        # Refund credits on failure via RPC
         try:
-            logger.info(f"Attempting to refund {credits_cost} credits to user {user_id}")
-
-            # Get current credits
-            profile_response = supabase_admin.table("profiles") \
-                .select("credits") \
-                .eq("id", user_id) \
-                .execute()
-
-            if profile_response.data and len(profile_response.data) > 0:
-                current_credits = profile_response.data[0].get("credits", 0)
-                new_credits = current_credits + credits_cost
-
-                # Refund credits
-                supabase_admin.table("profiles").update({
-                    "credits": new_credits
-                }).eq("id", user_id).execute()
-
-                logger.info(f"Successfully refunded {credits_cost} credits to user {user_id}. New balance: {new_credits}")
-
-                # Log the refund transaction
-                supabase_admin.table("credit_transactions").insert({
-                    "user_id": user_id,
-                    "amount": credits_cost,
-                    "balance_after": new_credits,
-                    "transaction_type": "refund",
-                    "description": f"Refund for failed digital human video generation: {str(e)[:200]}"
-                }).execute()
-
+            logger.info(f"Refunding {CREDITS_COST} credits to user {user_id}")
+            refund_credits(
+                user_id=user_id,
+                amount=CREDITS_COST,
+                description=f"Refund for failed digital human video: {str(e)[:200]}",
+                reference_id=digital_human_id,
+                reference_type="digital_human",
+            )
+            logger.info(f"Refunded {CREDITS_COST} credits to user {user_id}")
         except Exception as refund_error:
             logger.error(f"Failed to refund credits: {str(refund_error)}", exc_info=True)
 
@@ -341,12 +284,14 @@ async def generate_digital_human_video(
 ):
     """Generate video with digital human speaking the provided text."""
     try:
-        # Verify digital human ownership
-        dh_response = supabase_admin.table("digital_humans") \
-            .select("*") \
-            .eq("id", digital_human_id) \
-            .eq("user_id", user_id) \
+        # Verify ownership
+        dh_response = (
+            supabase_admin.table("digital_humans")
+            .select("*")
+            .eq("id", digital_human_id)
+            .eq("user_id", user_id)
             .execute()
+        )
 
         if not dh_response.data or len(dh_response.data) == 0:
             raise HTTPException(
@@ -354,33 +299,21 @@ async def generate_digital_human_video(
                 detail="Digital human not found"
             )
 
-        # Check user credits
-        profile_response = supabase_admin.table("profiles") \
-            .select("credits") \
-            .eq("id", user_id) \
-            .execute()
-
-        if not profile_response.data or len(profile_response.data) == 0:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User profile not found"
+        # Deduct credits via RPC (checks balance + writes transaction atomically)
+        try:
+            deduct_credits(
+                user_id=user_id,
+                amount=CREDITS_COST,
+                description=f"Digital human video generation: {request.text[:50]}",
+                reference_id=digital_human_id,
+                reference_type="digital_human",
             )
-
-        credits = profile_response.data[0].get("credits", 0)
-        credits_cost = 10
-
-        if credits < credits_cost:
+        except RuntimeError as e:
             raise HTTPException(
                 status_code=status.HTTP_402_PAYMENT_REQUIRED,
-                detail=f"Insufficient credits. Required: {credits_cost}, Available: {credits}"
+                detail=f"Insufficient credits or deduction failed: {e}"
             )
 
-        # Deduct credits
-        supabase_admin.table("profiles").update({
-            "credits": credits - credits_cost
-        }).eq("id", user_id).execute()
-
-        # Start background task
         background_tasks.add_task(
             process_digital_human_video,
             digital_human_id=digital_human_id,

@@ -10,7 +10,7 @@ interface Stats {
   totalUsers: number;
   totalProjects: number;
   totalCredits: number;
-  activeUsers: number;
+  totalTasks: number;
 }
 
 interface User {
@@ -18,6 +18,8 @@ interface User {
   email: string;
   full_name: string | null;
   credits: number;
+  is_admin: boolean;
+  subscription_tier: string;
   created_at: string;
 }
 
@@ -28,7 +30,7 @@ export default function AdminPage() {
     totalUsers: 0,
     totalProjects: 0,
     totalCredits: 0,
-    activeUsers: 0,
+    totalTasks: 0,
   });
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,8 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
+    } else if (!authLoading && user && !user.is_admin) {
+      router.push('/dashboard');
     }
   }, [user, authLoading, router]);
 
@@ -53,36 +57,32 @@ export default function AdminPage() {
   const loadAdminData = async () => {
     setLoading(true);
     try {
-      // 加载统计数据
-      const { count: userCount } = await supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true });
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-      const { count: projectCount } = await supabase
-        .from('projects')
-        .select('*', { count: 'exact', head: true });
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const headers = {
+        'Authorization': `Bearer ${session.access_token}`,
+      };
 
-      const { data: creditData } = await supabase
-        .from('users')
-        .select('credits');
+      // Load stats
+      const statsRes = await fetch(`${apiUrl}/api/v1/admin/stats`, { headers });
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setStats({
+          totalUsers: statsData.total_users || 0,
+          totalProjects: statsData.total_projects || 0,
+          totalCredits: 0, // Not provided by backend
+          totalTasks: statsData.total_generation_tasks || 0,
+        });
+      }
 
-      const totalCredits = creditData?.reduce((sum, u) => sum + (u.credits || 0), 0) || 0;
-
-      setStats({
-        totalUsers: userCount || 0,
-        totalProjects: projectCount || 0,
-        totalCredits,
-        activeUsers: Math.floor((userCount || 0) * 0.7), // 模拟活跃用户
-      });
-
-      // 加载用户列表
-      const { data: usersData } = await supabase
-        .from('users')
-        .select('id, email, full_name, credits, created_at')
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      setUsers(usersData || []);
+      // Load users
+      const usersRes = await fetch(`${apiUrl}/api/v1/admin/users`, { headers });
+      if (usersRes.ok) {
+        const usersData = await usersRes.json();
+        setUsers(usersData.users || []);
+      }
     } catch (error) {
       console.error('Error loading admin data:', error);
     } finally {
@@ -152,7 +152,7 @@ export default function AdminPage() {
                   { label: '总用户数', value: stats.totalUsers, icon: '👥', color: 'from-blue-500 to-cyan-500' },
                   { label: '总项目数', value: stats.totalProjects, icon: '📁', color: 'from-purple-500 to-pink-500' },
                   { label: '总积分数', value: stats.totalCredits, icon: '💎', color: 'from-yellow-500 to-orange-500' },
-                  { label: '活跃用户', value: stats.activeUsers, icon: '⚡', color: 'from-green-500 to-emerald-500' },
+                  { label: '生成任务数', value: stats.totalTasks, icon: '⚡', color: 'from-green-500 to-emerald-500' },
                 ].map((stat, index) => (
                   <div
                     key={index}
@@ -183,30 +183,8 @@ export default function AdminPage() {
                 >
                   最近活动
                 </h2>
-                <div className="space-y-4">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between p-4 bg-[#0A0A0F] border border-[#2A2A3A] rounded-lg"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-gradient-to-br from-[#8B5CF6] to-[#EC4899] rounded-full flex items-center justify-center text-white font-bold">
-                          U
-                        </div>
-                        <div>
-                          <div className="text-sm text-white" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                            用户创建了新项目
-                          </div>
-                          <div className="text-xs text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                            {i} 分钟前
-                          </div>
-                        </div>
-                      </div>
-                      <span className="text-xs text-[#8B5CF6] px-3 py-1 bg-[#8B5CF6]/20 rounded-full">
-                        新项目
-                      </span>
-                    </div>
-                  ))}
+                <div className="text-center py-12 text-[#A0A0B0]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                  暂无最近活动
                 </div>
               </div>
             </div>

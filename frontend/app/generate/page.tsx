@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/store';
 import { supabase } from '@/lib/supabase';
-import { calculateCreditsNeeded, deductCredits } from '@/lib/credits';
+import { calculateCreditsNeeded } from '@/lib/credits';
 import FileUpload from '@/components/FileUpload';
 
 type Mode = 'basic' | 'advanced';
@@ -48,148 +48,58 @@ export default function GeneratePage() {
 
     try {
       if (!user) throw new Error('请先登录');
-
-      // 检查模型是否需要上传图片
       if (modelType === 'wan2.6-i2v' && uploadedFiles.length === 0) {
         throw new Error('该模型需要上传图片');
       }
 
-      // 检查积分是否足够
-      const creditsNeeded = calculateCreditsNeeded(mode, duration);
-
-      if (user.credits < creditsNeeded) {
-        throw new Error('积分不足，请充值');
-      }
-
-      // 创建项目
-      const { data: project, error: projectError } = await supabase
-        .from('projects')
-        .insert({
-          user_id: user.id,
-          title,
-          description,
-          mode,
-          project_type: mode, // 添加 project_type 字段
-          status: 'draft',
-          credits_used: creditsNeeded,
-        })
-        .select()
-        .single();
-
-      if (projectError) throw projectError;
-
-      // 如果是高级模式，保存上传的文件到 assets 表
-      if (mode === 'advanced' && uploadedFiles.length > 0) {
-        for (const { url, file } of uploadedFiles) {
-          // 创建 asset 记录
-          const { data: asset, error: assetError } = await supabase
-            .from('assets')
-            .insert({
-              user_id: user.id,
-              file_type: file.type.startsWith('image/') ? 'image' : 'video',
-              file_url: url,
-              file_name: file.name,
-              file_size: file.size,
-            })
-            .select()
-            .single();
-
-          if (assetError) throw assetError;
-
-          // 关联到项目
-          const { error: projectAssetError } = await supabase
-            .from('project_assets')
-            .insert({
-              project_id: project.id,
-              asset_id: asset.id,
-            });
-
-          if (projectAssetError) throw projectAssetError;
-        }
-      }
-
-      // 扣除积分
-      const deductResult = await deductCredits(
-        user.id,
-        creditsNeeded,
-        `生成视频: ${title}`,
-        project.id
-      );
-
-      if (!deductResult.success) {
-        throw new Error(deductResult.error || '扣除积分失败');
-      }
-
-      // 调用后端API生成视频
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('请先登录');
-      }
+      if (!session) throw new Error('请先登录');
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const requestUrl = `${apiUrl}/api/v1/generate/video`;
-
-      // 构建请求体
-      const requestBody: any = {
-        project_id: project.id,
-        prompt: description,
-        model_type: modelType,
-        duration: duration,
-        optimize_prompt: true,
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
       };
 
-      // 如果选择的模型需要图片，则传递 image_url
-      if (modelType === 'wan2.6-i2v' && uploadedFiles.length > 0) {
-        requestBody.image_url = uploadedFiles[0].url;
-      }
-
-      console.log('🚀 发送请求到:', requestUrl);
-      console.log('📦 请求体:', requestBody);
-      console.log('🔑 Token:', session.access_token.substring(0, 20) + '...');
-
-      const response = await fetch(requestUrl, {
+      // 1. Create project via backend API
+      const projectRes = await fetch(`${apiUrl}/api/v1/projects`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(requestBody),
+        headers,
+        body: JSON.stringify({
+          title,
+          description,
+          project_type: mode === 'basic' ? 'one_click_basic' : 'one_click_advanced',
+          config: { style, duration, modelType },
+        }),
       });
 
-      console.log('📡 响应状态:', response.status, response.statusText);
-      console.log('📡 响应头:', Object.fromEntries(response.headers.entries()));
-
-      if (!response.ok) {
-        let errorMessage = '视频生成失败';
-        try {
-          // Clone the response so we can read it multiple times if needed
-          const responseClone = response.clone();
-          const responseText = await responseClone.text();
-          console.error('原始响应体:', responseText);
-          console.error('响应体长度:', responseText.length);
-
-          const errorData = await response.json();
-          console.error('后端返回错误:', errorData);
-          console.error('错误数据类型:', typeof errorData);
-          console.error('错误数据键:', Object.keys(errorData));
-          console.error('状态码:', response.status);
-          errorMessage = errorData.detail || JSON.stringify(errorData) || errorMessage;
-        } catch (parseError) {
-          console.error('无法解析错误响应:', parseError);
-          console.error('解析错误详情:', parseError instanceof Error ? parseError.message : String(parseError));
-          // Don't try to read response.text() again as body was already consumed
-          errorMessage = `请求失败 (${response.status})`;
-        }
-        throw new Error(errorMessage);
+      if (!projectRes.ok) {
+        const err = await projectRes.json().catch(() => ({}));
+        throw new Error(err.detail || '创建项目失败');
       }
 
-      const result = await response.json();
-      console.log('✅ 视频生成请求成功:', result);
+      const project = await projectRes.json();
 
-      // 更新用户积分显示
+      // 2. Call generate API (backend handles credit deduction)
+      const generateRes = await fetch(`${apiUrl}/api/v1/generate/video`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          project_id: project.id,
+          prompt: description,
+          model_type: modelType,
+          image_url: uploadedFiles.length > 0 ? uploadedFiles[0].url : undefined,
+          duration,
+          optimize_prompt: true,
+        }),
+      });
+
+      if (!generateRes.ok) {
+        const err = await generateRes.json().catch(() => ({}));
+        throw new Error(err.detail || '视频生成失败');
+      }
+
       await checkAuth();
-
-      // 跳转到项目详情页
       router.push(`/projects/${project.id}`);
     } catch (err: any) {
       setError(err.message || '创建失败，请稍后重试');

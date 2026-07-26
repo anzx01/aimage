@@ -2,53 +2,29 @@
 Projects API endpoints.
 """
 from fastapi import APIRouter, HTTPException, status, Depends
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import List
 import logging
 from app.schemas import ProjectCreate, ProjectUpdate, ProjectResponse
 from app.db.supabase import supabase_admin
+from app.api.deps import get_current_user_id
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
-security = HTTPBearer()
-
-
-async def get_current_user_id(credentials: HTTPAuthorizationCredentials = Depends(security)) -> str:
-    """Get current user ID from token using Supabase auth."""
-    token = credentials.credentials
-
-    try:
-        # Verify token using Supabase auth
-        response = supabase_admin.auth.get_user(token)
-
-        if not response or not response.user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token: user not found"
-            )
-
-        return response.user.id
-    except Exception as e:
-        logger.error(f"Authentication error: {str(e)}")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication failed: {str(e)}"
-        )
 
 
 @router.get("", response_model=List[ProjectResponse])
 async def get_projects(user_id: str = Depends(get_current_user_id)):
     """Get all projects for current user."""
     try:
-        response = supabase_admin.table("projects") \
-            .select("*") \
-            .eq("user_id", user_id) \
-            .order("created_at", desc=True) \
+        response = (
+            supabase_admin.table("projects")
+            .select("*")
+            .eq("user_id", user_id)
+            .order("created_at", desc=True)
             .execute()
-
+        )
         return [ProjectResponse(**project) for project in response.data]
-
     except Exception as e:
         logger.error(f"Error fetching projects: {str(e)}", exc_info=True)
         raise HTTPException(
@@ -81,6 +57,8 @@ async def create_project(
 
         return ProjectResponse(**response.data[0])
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating project: {str(e)}", exc_info=True)
         raise HTTPException(
@@ -96,12 +74,14 @@ async def get_project(
 ):
     """Get a specific project."""
     try:
-        response = supabase_admin.table("projects") \
-            .select("*") \
-            .eq("id", project_id) \
-            .eq("user_id", user_id) \
-            .single() \
+        response = (
+            supabase_admin.table("projects")
+            .select("*")
+            .eq("id", project_id)
+            .eq("user_id", user_id)
+            .single()
             .execute()
+        )
 
         if not response.data:
             raise HTTPException(
@@ -111,6 +91,8 @@ async def get_project(
 
         return ProjectResponse(**response.data)
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching project: {str(e)}", exc_info=True)
         raise HTTPException(
@@ -127,7 +109,6 @@ async def update_project(
 ):
     """Update a project."""
     try:
-        # Build update dict
         update_data = {}
         if project_data.title is not None:
             update_data["title"] = project_data.title
@@ -144,11 +125,13 @@ async def update_project(
                 detail="No fields to update"
             )
 
-        response = supabase_admin.table("projects") \
-            .update(update_data) \
-            .eq("id", project_id) \
-            .eq("user_id", user_id) \
+        response = (
+            supabase_admin.table("projects")
+            .update(update_data)
+            .eq("id", project_id)
+            .eq("user_id", user_id)
             .execute()
+        )
 
         if not response.data:
             raise HTTPException(
@@ -158,6 +141,8 @@ async def update_project(
 
         return ProjectResponse(**response.data[0])
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating project: {str(e)}", exc_info=True)
         raise HTTPException(
@@ -173,11 +158,13 @@ async def delete_project(
 ):
     """Delete a project."""
     try:
-        response = supabase_admin.table("projects") \
-            .delete() \
-            .eq("id", project_id) \
-            .eq("user_id", user_id) \
+        response = (
+            supabase_admin.table("projects")
+            .delete()
+            .eq("id", project_id)
+            .eq("user_id", user_id)
             .execute()
+        )
 
         if not response.data:
             raise HTTPException(
@@ -187,6 +174,8 @@ async def delete_project(
 
         return None
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error deleting project: {str(e)}", exc_info=True)
         raise HTTPException(

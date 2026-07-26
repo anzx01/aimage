@@ -16,8 +16,9 @@ interface Package {
 
 interface Transaction {
   id: string;
-  type: 'purchase' | 'usage' | 'refund';
+  transaction_type: string;
   amount: number;
+  balance_after: number;
   description: string;
   created_at: string;
 }
@@ -47,50 +48,25 @@ export default function CreditsPage() {
 
   const loadTransactions = async () => {
     try {
-      const { data, error } = await supabase
-        .from('credit_transactions')
-        .select('*')
-        .eq('user_id', user!.id)
-        .order('created_at', { ascending: false })
-        .limit(20);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-      if (error) {
-        console.warn('加载交易记录失败，使用模拟数据:', error);
-        // 使用模拟数据
-        setTransactions(generateMockTransactions());
-      } else {
-        setTransactions(data || []);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${apiUrl}/api/v1/credits/transactions?limit=20`, {
+        headers: { 'Authorization': `Bearer ${session.access_token}` },
+      });
+
+      if (!res.ok) {
+        setTransactions([]);
+        return;
       }
+
+      const data = await res.json();
+      setTransactions(data.transactions || []);
     } catch (err) {
       console.error('加载交易记录异常:', err);
-      setTransactions(generateMockTransactions());
+      setTransactions([]);
     }
-  };
-
-  const generateMockTransactions = (): Transaction[] => {
-    return [
-      {
-        id: '1',
-        type: 'purchase',
-        amount: 50,
-        description: '购买积分套餐',
-        created_at: new Date(Date.now() - 86400000).toISOString(),
-      },
-      {
-        id: '2',
-        type: 'usage',
-        amount: -3,
-        description: '生成60秒视频 - 高端珠宝展示',
-        created_at: new Date(Date.now() - 172800000).toISOString(),
-      },
-      {
-        id: '3',
-        type: 'usage',
-        amount: -2,
-        description: '生成30秒视频 - 时尚女装',
-        created_at: new Date(Date.now() - 259200000).toISOString(),
-      },
-    ];
   };
 
   if (authLoading) {
@@ -114,82 +90,30 @@ export default function CreditsPage() {
 
   const handlePurchase = async (packageId: string) => {
     setSelectedPackage(packageId);
-
     try {
-      if (!user) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         alert('请先登录');
         return;
       }
 
-      // 获取套餐信息
-      const pkg = packages.find(p => p.id === packageId);
-      if (!pkg) {
-        alert('无效的套餐');
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${apiUrl}/api/v1/credits/purchase?package_id=${packageId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.detail || '购买失败');
         return;
       }
 
-      const total_credits = pkg.credits + pkg.bonus;
-
-      // 获取当前积分 - 使用 auth.users 表中的 raw_user_meta_data
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-
-      if (authError || !authUser) {
-        console.error('获取认证用户失败:', authError);
-        alert('购买失败：无法获取用户信息');
-        return;
-      }
-
-      // 尝试从 users 表获取积分
-      let current_credits = 0;
-      const { data: userData, error: getUserError } = await supabase
-        .from('users')
-        .select('credits')
-        .eq('id', user.id)
-        .single();
-
-      if (!getUserError && userData) {
-        current_credits = userData.credits || 0;
-      } else {
-        console.warn('无法从 users 表获取积分，使用默认值 0');
-      }
-
-      const new_credits = current_credits + total_credits;
-
-      // 更新用户积分
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ credits: new_credits })
-        .eq('id', user.id);
-
-      if (updateError) {
-        console.error('更新用户积分失败:', updateError);
-        alert('购买失败：' + updateError.message + '\n\n请确保 users 表有 credits 字段');
-        return;
-      }
-
-      // 尝试创建交易记录（如果失败也不影响购买）
-      try {
-        await supabase
-          .from('credit_transactions')
-          .insert({
-            user_id: user.id,
-            amount: total_credits,
-            type: 'purchase',
-            description: `购买积分套餐 - ${pkg.credits}积分 + ${pkg.bonus}赠送`,
-          });
-      } catch (txError) {
-        console.warn('创建交易记录失败（不影响购买）:', txError);
-      }
-
-      alert(`购买成功！获得 ${total_credits} 积分，当前余额：${new_credits} 积分`);
-
-      // 刷新用户信息
+      alert(`购买成功（沙箱模式）！获得 ${data.credits_added} 积分，当前余额：${data.new_balance} 积分`);
       await checkAuth();
-
-      // 刷新交易记录
-      if (showHistory) {
-        loadTransactions();
-      }
+      if (showHistory) loadTransactions();
     } catch (error) {
       console.error('购买失败:', error);
       alert('购买失败，请稍后重试');
