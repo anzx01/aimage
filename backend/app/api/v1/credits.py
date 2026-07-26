@@ -76,7 +76,7 @@ async def purchase_credits(
                 "p_user_id": user_id,
                 "p_amount": total_credits,
                 "p_description": f"购买积分套餐 - {package['credits']}积分 + {package['bonus']}赠送 (沙箱)",
-                "p_reference_id": package_id,
+                "p_reference_id": None,
                 "p_reference_type": "purchase",
             },
         ).execute()
@@ -87,7 +87,8 @@ async def purchase_credits(
                 detail="充值失败"
             )
 
-        balance_after = result.data.get("balance_after", 0) if isinstance(result.data, dict) else 0
+        # RPC returns the new balance as an integer
+        balance_after = result.data if isinstance(result.data, int) else 0
 
         return {
             "success": True,
