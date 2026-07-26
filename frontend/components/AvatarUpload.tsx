@@ -62,7 +62,7 @@ export default function AvatarUpload({ currentAvatar, onUploadComplete, userId }
 
       // 更新用户头像
       const { error: updateError } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ avatar_url: publicUrl })
         .eq('id', userId);
 

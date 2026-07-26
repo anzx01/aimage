@@ -331,13 +331,13 @@ export default function CreditsPage() {
                     <div key={transaction.id} className="flex items-center justify-between p-4 bg-[#0A0A0F] border border-[#2A2A3A] rounded-lg">
                       <div className="flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                          transaction.type === 'purchase' ? 'bg-green-500/10' :
-                          transaction.type === 'refund' ? 'bg-blue-500/10' :
+                          transaction.transaction_type === 'purchase' ? 'bg-green-500/10' :
+                          transaction.transaction_type === 'refund' ? 'bg-blue-500/10' :
                           'bg-red-500/10'
                         }`}>
                           <span className="text-xl">
-                            {transaction.type === 'purchase' ? '💰' :
-                             transaction.type === 'refund' ? '🔄' :
+                            {transaction.transaction_type === 'purchase' ? '💰' :
+                             transaction.transaction_type === 'refund' ? '🔄' :
                              '📹'}
                           </span>
                         </div>

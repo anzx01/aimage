@@ -14,6 +14,7 @@ export interface Profile {
   phone: string | null;
   credits: number;
   subscription_tier: 'free' | 'pro' | 'enterprise';
+  is_admin: boolean;
   created_at: string;
   updated_at: string;
 }

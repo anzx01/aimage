@@ -71,7 +71,7 @@ export default function SettingsPage() {
 
     try {
       const { error: updateError } = await supabase
-        .from('users')
+        .from('profiles')
         .update({ full_name: fullName })
         .eq('id', user!.id);
 
