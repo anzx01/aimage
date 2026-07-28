@@ -6,6 +6,7 @@ interface AuthState {
   loading: boolean;
   setUser: (user: Profile | null) => void;
   login: (email: string, password: string) => Promise<void>;
+  loginWithGitHub: () => Promise<void>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
@@ -38,6 +39,17 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       set({ user: profile, loading: false });
     }
+  },
+
+  loginWithGitHub: async () => {
+    const redirectTo = `${window.location.origin}/dashboard`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: { redirectTo },
+    });
+
+    if (error) throw error;
+    // OAuth 会重定向浏览器，checkAuth 会在回调后自动恢复 session
   },
 
   logout: async () => {
